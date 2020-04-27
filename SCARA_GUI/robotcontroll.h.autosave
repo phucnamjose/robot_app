@@ -1,0 +1,119 @@
+#ifndef ROBOTCONTROLL_H
+#define ROBOTCONTROLL_H
+
+#include <QObject>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
+#include <QDebug>
+#include <QTimer>
+#include <QEventLoop>
+
+#include <stdio.h>
+#include <string.h>
+#include <sstream>
+#include "debug.h"
+
+#define  START_CHAR         (0x28)
+#define  END_CHAR           (0x29)
+
+
+using namespace std;
+
+class RobotControll : public QSerialPort
+{
+    Q_OBJECT
+
+ public:
+    explicit RobotControll(QObject *parent = nullptr);
+    virtual ~RobotControll();
+    string qbyteArray2string(QByteArray &data);
+ public:
+    enum robotCommand_t {
+        CMD_STOPNOW = 0,
+        CMD_SCAN,
+        CMD_HOME,
+        CMD_MOVE_LINE,
+        CMD_MOVE_CIRCLE,
+        CMD_MOVE_JOINT,
+        CMD_ROTATE_SINGLE,
+        CMD_OUTPUT,
+        CMD_READ_STATUS,
+        CMD_READ_POSITION,
+        CMD_SETTING,
+        NUM_OF_CMD, // = 11 CMD
+    };
+
+    enum robotRespond_t {
+        RPD_IDLE = 0,
+        RPD_BUSY,
+        RPD_START,
+        RPD_RUNNING,
+        RPD_STOP,
+        RPD_DONE,
+        RPD_ERROR,
+        RPD_OK,
+        RPD_POSITION,
+        NUM_OF_RPD, // = 9 RPD
+    };
+
+ signals:
+    void    commandTimeOut          ();
+    void    commandWorkStart        ();
+    void    commandWorkRunning      ();
+    void    commandWorkStop         ();
+    void    commandWorkDone         ();
+    void    commandSend             (QByteArray command);
+
+private:
+    bool    packData                (QByteArray &data);
+    bool    unPackData              (QByteArray &data);
+    bool    writeData               (QByteArray &data);
+    void    readData                ();
+    void    timeOut                 ();
+    bool    setCommandNWait         (robotCommand_t cmd, const QString para = "");
+
+ public:
+    bool    setCommand              (robotCommand_t cmd, int time, const QString para = "");
+    void    resetId                 ();
+
+    // For user:
+    bool    robotStop               ();
+    bool    robotScanLimit          ();
+    bool    robotMoveHome           ();
+    bool    robotMoveLine           (double x, double y, double z, double roll);
+
+    bool    robotMoveCircle         (double x, double y, double z, double roll,
+                                     double center_x, double center_y, double center_z,
+                                     int8_t direction);
+
+    bool    robotMoveJoint          (double x, double y, double z, double roll);
+    bool    robotRotateSingleJoint  (int joint, double angle);
+    bool    robotOutput             (bool output);
+    bool    robotReadStatus         ();
+    bool    robotReadPosition       ();
+    
+    double  robotGetX               ();
+    double  robotGetY               ();
+    double  robotGetZ               ();
+    double  robotGetVar1            ();
+    double  robotGetVar2            ();
+    double  robotGetVar3            ();
+    double  robotGetVar4            ();
+
+ private:
+    QTimer          *timeout;
+    
+    
+    
+    
+    
+    
+    
+    int             id_command  = 1;
+
+    bool            istimeout   = false;
+    float           x, y, z;
+    float           var1, var2, var3, var4;
+};
+
+#endif // ROBOTCONTROLL_H
