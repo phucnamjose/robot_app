@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab1_Control">
      <attribute name="title">
@@ -1378,19 +1378,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QCheckBox" name="checkBox_Scan">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>150</y>
-         <width>70</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>SCAN</string>
-       </property>
-      </widget>
       <widget class="QWidget" name="layoutWidget_2">
        <property name="geometry">
         <rect>
@@ -1562,44 +1549,36 @@
         </item>
        </layout>
       </widget>
-      <widget class="QLabel" name="label_Coordinate">
+      <widget class="QRadioButton" name="radioButton_Degree">
        <property name="geometry">
         <rect>
-         <x>100</x>
-         <y>150</y>
-         <width>121</width>
-         <height>16</height>
+         <x>340</x>
+         <y>50</y>
+         <width>41</width>
+         <height>17</height>
         </rect>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>11</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
        <property name="text">
-        <string>COORDINATE</string>
+        <string>Deg</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
-      <widget class="QLabel" name="label_Trajectory">
+      <widget class="QRadioButton" name="radioButton_Radian">
        <property name="geometry">
         <rect>
-         <x>230</x>
-         <y>150</y>
-         <width>121</width>
-         <height>16</height>
+         <x>340</x>
+         <y>20</y>
+         <width>41</width>
+         <height>17</height>
         </rect>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>11</pointsize>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
        <property name="text">
-        <string>TRAJECTORY</string>
+        <string>Rad</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
        </property>
       </widget>
      </widget>
@@ -1608,6 +1587,143 @@
      <attribute name="title">
       <string>Plot</string>
      </attribute>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>10</y>
+        <width>831</width>
+        <height>601</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Plot</string>
+      </property>
+      <widget class="QFrame" name="horizontalFrame">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>40</y>
+         <width>791</width>
+         <height>531</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_Delete_Plot">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>141</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Delete Data</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_Comport_2">
+       <item>
+        <widget class="QLabel" name="label_Line1">
+         <property name="text">
+          <string>Line1</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_Line1"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>130</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_Comport_6">
+       <item>
+        <widget class="QLabel" name="label_Line2">
+         <property name="text">
+          <string>Line2</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_Line2"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>170</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_Comport_8">
+       <item>
+        <widget class="QLabel" name="label_Line3">
+         <property name="text">
+          <string>Line3</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_Line3"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>210</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_Comport_10">
+       <item>
+        <widget class="QLabel" name="label_Line4">
+         <property name="text">
+          <string>Line4</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_Line4"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </widget>
   </widget>

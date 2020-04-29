@@ -60,26 +60,26 @@ class RobotControll : public QSerialPort
     enum robotRespond_t {
         RPD_IDLE = 0,
         RPD_BUSY,
+        RPD_POSITION,
         RPD_START,
         RPD_RUNNING,
-        RPD_STOP,
         RPD_DONE,
+        RPD_STOP,
         RPD_ERROR,
         RPD_OK,
-        RPD_POSITION,
         NUM_OF_RPD, // = 9 RPD
     };
 
     const char *ROBOTRESPOND[NUM_OF_RPD] = {
         "IDLE",
         "BUSY",
+        "POSI",
         "STAR",
         "RUNN",
-        "STOP",
         "DONE",
+        "STOP",
         "ERRO",
-        "OKAY",
-        "POSI"
+        "OKAY"
     };
 
     enum robotCoordinate_t {
@@ -97,15 +97,28 @@ class RobotControll : public QSerialPort
           MODE_INIT_QVT     /*!< Consume T max, determine A max */
     };
 
-
+    enum robotParam_t {
+        Param_Var0 = 0,
+        Param_Var1,
+        Param_Var2,
+        Param_Var3,
+        Param_X,
+        Param_Y,
+        Param_Z,
+        Param_Roll,
+        Param_TimeRun
+    };
 
   signals:
             void    commandTimeOut();
-            void    commandWorkStart();
-            void    commandWorkRunning();
-            void    commandWorkStop();
-            void    commandWorkDone();
+            void    commandWorkStart(QByteArray repsond);
+            void    commandWorkRunning(QByteArray repsond);
+            void    commandWorkStop(QByteArray repsond);
+            void    commandWorkDone(QByteArray repsond);
             void    commandSend(QByteArray command);
+            void    commandAccept(QByteArray repsond);
+            void    commandDeny(QByteArray repsond);
+            void    respondPosition(QByteArray repsond);
             void    respondArrived(QByteArray repsond);
 
 private:
@@ -114,15 +127,17 @@ private:
             bool    writeData(QByteArray &data);
             void    readData();
             void    timeOut();
+            bool   processRespond(QByteArray &respond);
+            bool   list2position(QByteArrayList list);
             bool   setCommand(robotCommand_t cmd, int time, const QString para = "");
 //            bool    setCommandNWait(robotCommand_t cmd, const QString para = "");
 
  public:
             void    robotResetId();
-            void    robotSetModeInite(robotModeInit_t type);
-            void    robotSetAccelerate(double factor);
-            void    robotSetVelocity(double factor);
-            void    robotSetTimeTotal(double time);
+            bool    setModeInite(robotModeInit_t type);
+            bool    setAccelerate(double factor);
+            bool    setVelocity(double factor);
+            bool    setTimeTotal(double time);
 
             bool    robotStop();
             bool    robotScanLimit();
@@ -140,14 +155,17 @@ private:
             bool    robotReadPosition();
             bool    robotSetting(robotCoordinate_t coordinate, robotTrajectory_t   trajectory);
 
-            double  robotGetX();
-            double  robotGetY();
-            double  robotGetZ();
-            double  robotGetRoll();
-            double  robotGetVar1();
-            double  robotGetVar2();
-            double  robotGetVar3();
-            double  robotGetVar4();
+            bool       isScan();
+            double  getX();
+            double  getY();
+            double  getZ();
+            double  getRoll();
+            double  getVar0();
+            double  getVar1();
+            double  getVar2();
+            double  getVar3();
+            double  getTimeRun();
+            double  getValue(robotParam_t param);
 
  private:
             QTimer     *timeout;
@@ -155,8 +173,11 @@ private:
 
             int              id_command  = 1;
             bool          istimeout         = false;
+
+            bool          scan                = false;
             double     x, y, z, roll;
-            double     var1, var2, var3, var4;
+            double     var0, var1, var2, var3;
+            double     time_run = 0;
             double     factor_accelerate = 0.3;
             double     factor_velocity      = 0.3;
             double     time_total               = 10;

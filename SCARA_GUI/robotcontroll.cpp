@@ -108,24 +108,119 @@ bool RobotControll::writeData(QByteArray &data) {
 void RobotControll::readData() {
     if(this->isOpen()) {
         QByteArray data = this->readAll();
-        while(data.lastIndexOf(END_CHAR) != -1) {
-            QByteArray temp = data.mid(data.lastIndexOf(START_CHAR));
-            data.remove(data.lastIndexOf(START_CHAR), data.length());
-            // Send Signal
-            emit respondArrived(temp);
+        // Mutil command in 1 frame
+        while(data.indexOf(END_CHAR) != -1) {
+            QByteArray temp = data.left(data.indexOf(END_CHAR) +1);
+            data.remove(0, data.indexOf(END_CHAR) +1);
             // Unpack Payload
-            if( this->unPackData(temp) == false ) {
+            if ( this->unPackData(temp) == false ) {
                 M_DEBUG("unpack fail");
-                Debug::_delete(temp, data);
-                return;
+                continue;
+                //Debug::_delete(temp, data);
             }
-
+            if (!processRespond(temp)) {
+                M_DEBUG("error frame");
+                continue;
+            }
             M_DEBUG(qbyteArray2string(temp));
         }
     } else {
         M_DEBUG("no device");
         return;
     }
+}
+
+bool   RobotControll::processRespond(QByteArray &repsond) {
+    int id_cmd;
+    QByteArray respond_code;
+    bool isInt;
+    QByteArrayList list = repsond.split(' ');
+    id_cmd =  list.at(0).toInt(&isInt);
+    if (isInt) {
+        respond_code.clear();
+        respond_code += list.at(1);
+        // IDLE
+        if (respond_code == ROBOTRESPOND[RPD_IDLE]) {
+            if (list.at(2).toInt() == 1) {  scan = true;}
+            else if (list.at(2).toInt() == 0) {  scan = false;}
+            // Send Signal
+            emit respondArrived(repsond);
+
+        // BUSY
+        } else if (respond_code == ROBOTRESPOND[RPD_BUSY]) {
+            if (list.at(2).toInt() == 1) {  scan = true;}
+            else if (list.at(2).toInt() == 0) {  scan = false;}
+            // Send Signal
+            emit respondArrived(repsond);
+
+        // POSI
+        } else if (respond_code == ROBOTRESPOND[RPD_POSITION]) {
+             list2position(list);
+             // Send Signal
+             emit respondPosition(repsond);
+        // STAR
+        } else if (respond_code == ROBOTRESPOND[RPD_START]) {
+            list2position(list);
+            // Send Signal
+            emit commandWorkStart(repsond);
+
+        // RUNN
+        } else if (respond_code == ROBOTRESPOND[RPD_RUNNING]) {
+            list2position(list);
+            // Send Signal
+            emit commandWorkRunning(repsond);
+
+        // DONE
+        } else if (respond_code == ROBOTRESPOND[RPD_DONE]) {
+            list2position(list);
+            // Send Signal
+            emit commandWorkDone(repsond);
+
+        // STOP
+        } else if (respond_code == ROBOTRESPOND[RPD_STOP]) {
+            // Send Signal
+            emit commandWorkStop(repsond);
+
+        // ERRO
+        } else if (respond_code == ROBOTRESPOND[RPD_ERROR]) {
+            // Send Signal
+            emit respondArrived(repsond);
+
+        // OKEY
+        } else if (respond_code == ROBOTRESPOND[RPD_OK]) {
+            // Send Signal
+            emit respondArrived(repsond);
+
+        // WRONG FRAME
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool   RobotControll::list2position(QByteArrayList list) {
+    double value[9];
+    bool isdouble[9];
+    if (list.length() != 11) {
+        return false;
+    }
+    for (int i = 2; i < list.length() ; ++i) {
+        value[i - 2] = list.at(i).toDouble(&isdouble[i - 2]);
+        if ( ! isdouble[i -2]) {
+            return false;
+        }
+    }
+    var0  = value[0];
+    var1   = value[1];
+    var2  = value[2];
+    var3  = value[3];
+    x        = value[4];
+    y        = value[5];
+    z        = value[6];
+    roll    = value[7];
+    time_run = value[8];
+    return true;
 }
 
 // When Robot doesn't respond
@@ -139,7 +234,9 @@ void RobotControll::timeOut()
 // Intergrate parameters to Command
 bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para) {
     QByteArray command;
+    QByteArray command_pack;
     command.clear();
+    command_pack.clear();
     if(para == "") {
         command.append(tr("%1 %2").arg(QString::number(id_command))
                        .arg(ROBOTCOMMAND[cmd]));
@@ -147,7 +244,8 @@ bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para)
         command.append(tr("%1 %2 %3").arg(QString::number(id_command))
                        .arg(ROBOTCOMMAND[cmd]).arg(para));
     }
-    if(this->writeData(command) == false) {
+    command_pack.append(command);
+    if(this->writeData(command_pack) == false) {
         M_DEBUG("write data fail");
         Debug::_delete(command);
         return false;
@@ -199,20 +297,40 @@ void RobotControll::robotResetId() {
     id_command = 1;
 }
 
-void    RobotControll::robotSetModeInite(robotModeInit_t type) {
-    mode_init = type;
+bool    RobotControll::setModeInite(robotModeInit_t type) {
+    if ( type == MODE_INIT_QVA || type == MODE_INIT_QVT) {
+         mode_init = type;
+         return true;
+    } else {
+        return false;
+    }
 }
 
-void    RobotControll::robotSetAccelerate(double factor) {
-    factor_accelerate = factor;
+bool    RobotControll::setAccelerate(double factor) {
+    if ( factor > 0 && factor <= 1) {
+        factor_accelerate = factor;
+        return true;
+    } else {
+        return false;
+    }
 }
 
-void    RobotControll::robotSetVelocity(double factor) {
-    factor_velocity = factor;
+bool    RobotControll::setVelocity(double factor) {
+    if ( factor > 0 && factor <= 1) {
+        factor_velocity = factor;
+        return true;
+    } else {
+        return false;
+    }
 }
 
-void    RobotControll::robotSetTimeTotal(double time) {
-    time_total = time;
+bool    RobotControll::setTimeTotal(double time) {
+    if ( time > 0 && time <30) {
+        time_total = time;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool RobotControll::robotStop() {
@@ -354,34 +472,77 @@ bool  RobotControll::robotSetting(robotCoordinate_t coordinate, robotTrajectory_
     return true;
 }
 
-double RobotControll::robotGetX(){
+bool   RobotControll::isScan() {
+    return scan;
+}
+
+double  RobotControll::getValue(robotParam_t param) {
+    switch (param) {
+    case Param_Var0:
+        return var0;
+        break;
+    case Param_Var1:
+        return var1;
+        break;
+    case Param_Var2:
+        return var2;
+        break;
+    case Param_Var3:
+        return var3;
+        break;
+    case Param_X:
+        return x;
+        break;
+    case Param_Y:
+        return y;
+        break;
+    case Param_Z:
+        return z;
+        break;
+    case Param_Roll:
+        return roll;
+        break;
+    case Param_TimeRun:
+        return  time_run;
+        break;
+    default:
+        return 0;
+        break;
+    }
+}
+
+double RobotControll::getX(){
     return x;
 }
 
-double RobotControll::robotGetY(){
+double RobotControll::getY(){
     return y;
 }
 
-double RobotControll::robotGetZ(){
+double RobotControll::getZ(){
     return z;
 }
 
-double RobotControll::robotGetRoll(){
-    return z;
+double RobotControll::getRoll(){
+    return roll;
 }
 
-double RobotControll::robotGetVar1(){
+double RobotControll::getVar0(){
+    return var0;
+}
+
+double RobotControll::getVar1(){
     return var1;
 }
 
-double RobotControll::robotGetVar2(){
+double RobotControll::getVar2(){
     return var2;
 }
 
-double RobotControll::robotGetVar3(){
+double RobotControll::getVar3(){
     return var3;
 }
 
-double RobotControll::robotGetVar4(){
-    return var4;
+double RobotControll:: getTimeRun() {
+    return time_run;
 }
