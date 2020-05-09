@@ -25,33 +25,33 @@ const char* comboBoxPlot_Y_Name[COMBOBOX_PLOT_NUM] = { "comboBox_Chart1_y",
 
 const char* comboBoxPlot_Var[COMBOBOX_VAR_NUM] = {  "None",
                                                                                                                                   "Time (second)",
-                                                                                                                                  "Position Var 0 (rad)",
-                                                                                                                                  "Position Var 1 (rad)",
-                                                                                                                                  "Position Var 2 (mm)",
-                                                                                                                                  "Position Var 3 (rad)",
-                                                                                                                                  "Position X (mm)",
-                                                                                                                                  "Position Y (mm)",
-                                                                                                                                   "Position Z (mm)",
-                                                                                                                                   "Position Roll (rad)",
-                                                                                                                                   "Position 3D (mm)",
-                                                                                                                                   "Velocity Var 0 (rad/s)",
-                                                                                                                                   "Velocity Var 1 (rad/s)",
-                                                                                                                                    "Velocity Var 2 (mm/s)",
-                                                                                                                                    "Velocity Var 3 (rad/s)",
-                                                                                                                                    "Velocity X (mm/s)",
-                                                                                                                                    "Velocity Y (mm/s)",
-                                                                                                                                    "Velocity Z (mm/s)",
-                                                                                                                                    "Velocity Roll (rad/s)",
-                                                                                                                                    "Velocity 3D (mm/s)",
-                                                                                                                                    "Accelerate Var 0 (rad/s2)",
-                                                                                                                                    "Accelerate Var 1 (rad/s2)",
-                                                                                                                                    "Accelerate Var 2 (mm/s2)",
-                                                                                                                                    "Accelerate Var 3 (rad/s2)",
-                                                                                                                                    "Accelerate X (mm/s2)",
-                                                                                                                                    "Acceleratey Y (mm/s2)",
-                                                                                                                                    "Accelerate Z (mm/s2)",
-                                                                                                                                    "Accelerate Roll (rad/s2)",
-                                                                                                                                    "Accelerate 3D (mm/s2)"};
+                                                                                                                                  "Pos Var 0 (rad)",
+                                                                                                                                  "Pos Var 1 (rad)",
+                                                                                                                                  "Pos Var 2 (mm)",
+                                                                                                                                  "Pos Var 3 (rad)",
+                                                                                                                                  "Pos X (mm)",
+                                                                                                                                  "Pos Y (mm)",
+                                                                                                                                   "Pos Z (mm)",
+                                                                                                                                   "Pos Roll (rad)",
+                                                                                                                                   "Pos 3D (mm)",
+                                                                                                                                   "Vel Var 0 (rad/s)",
+                                                                                                                                   "Vel Var 1 (rad/s)",
+                                                                                                                                    "Vel Var 2 (mm/s)",
+                                                                                                                                    "Vel Var 3 (rad/s)",
+                                                                                                                                    "Vel X (mm/s)",
+                                                                                                                                    "Vel Y (mm/s)",
+                                                                                                                                    "Vel Z (mm/s)",
+                                                                                                                                    "Vel Roll (rad/s)",
+                                                                                                                                    "Vel 3D (mm/s)",
+                                                                                                                                    "Acc Var 0 (rad/s2)",
+                                                                                                                                    "Acc Var 1 (rad/s2)",
+                                                                                                                                    "Acc Var 2 (mm/s2)",
+                                                                                                                                    "Acc Var 3 (rad/s2)",
+                                                                                                                                    "Acc X (mm/s2)",
+                                                                                                                                    "Acc Y (mm/s2)",
+                                                                                                                                    "Acc Z (mm/s2)",
+                                                                                                                                    "Acc Roll (rad/s2)",
+                                                                                                                                    "Acc 3D (mm/s2)"};
 
 
 MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
@@ -204,8 +204,8 @@ void MainWindow::compute_newData() {
         }
     } else {
         for (int i = 0; i < 9; ++i) {
-            vel[i]  = (pos[i] - pos_pre[i])*100;
-            acc[i] = (vel[i] - vel_pre[i])*100;
+            vel[i]  = (pos[i] - pos_pre[i])/(time  - time_pre);
+            acc[i] = (vel[i] - vel_pre[i])/ (time - time_pre);
         }
     }
     // Save value;
@@ -224,6 +224,7 @@ void MainWindow::compute_newData() {
         }
     }
     // Update previos value
+    time_pre = time;
     for (int i = 0; i < 9; ++i) {
         pos_pre[i] = pos[i];
         vel_pre[i] = vel[i];

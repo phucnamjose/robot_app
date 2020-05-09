@@ -98,6 +98,7 @@ private:
     QVector<double> vec_pos[9];
     QVector<double> vec_vel[9];
     QVector<double> vec_acc[9];
+    double time_pre;
     double pos_pre[9];
     double vel_pre[9];
     double acc_pre[9];

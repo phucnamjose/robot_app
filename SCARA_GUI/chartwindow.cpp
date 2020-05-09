@@ -138,10 +138,15 @@ bool ChartWindow::setRangeFit(int chart_num) {
         double range_x, range_y;
         range_x = x_max - x_min;
         range_y = y_max - y_min;
+        if (range_y < 0.00001) {
+            y_max = y_max + 0.05;
+            y_min = y_min - 0.05;
+        } else {
+            y_max = y_max + range_y*0.05;
+            y_min = y_min - range_y*0.05;
+        }
         x_min = x_min - range_x*0.05;
-        y_min = y_min - range_y*0.05;
         x_max = x_max + range_x*0.05;
-        y_max = y_max + range_y*0.05;
         setRangeX(chart_num, x_min, x_max);
         setRangeY(chart_num, y_min, y_max);
 

@@ -235,6 +235,7 @@ Makefile: ..\SCARA_GUI\SCARA_GUI.pro C:\Qt\5.9.9\msvc2015\mkspecs\win32-msvc\qma
 		C:\Qt\5.9.9\msvc2015\mkspecs\features\lex.prf \
 		..\SCARA_GUI\SCARA_GUI.pro \
 		C:\Qt\5.9.9\msvc2015\lib\qtmaind.prl \
+		C:\Qt\5.9.9\msvc2015\lib\Qt5Charts.prl \
 		C:\Qt\5.9.9\msvc2015\lib\Qt5Widgets.prl \
 		C:\Qt\5.9.9\msvc2015\lib\Qt5Gui.prl \
 		C:\Qt\5.9.9\msvc2015\lib\Qt5SerialPort.prl \
@@ -400,6 +401,7 @@ C:\Qt\5.9.9\msvc2015\mkspecs\features\yacc.prf:
 C:\Qt\5.9.9\msvc2015\mkspecs\features\lex.prf:
 ..\SCARA_GUI\SCARA_GUI.pro:
 C:\Qt\5.9.9\msvc2015\lib\qtmaind.prl:
+C:\Qt\5.9.9\msvc2015\lib\Qt5Charts.prl:
 C:\Qt\5.9.9\msvc2015\lib\Qt5Widgets.prl:
 C:\Qt\5.9.9\msvc2015\lib\Qt5Gui.prl:
 C:\Qt\5.9.9\msvc2015\lib\Qt5SerialPort.prl:
