@@ -106,6 +106,8 @@ class RobotControll : public QSerialPort
         Param_Y,
         Param_Z,
         Param_Roll,
+        Param_Lenght,
+        Param_Time_Total,
         Param_TimeRun
     };
 
@@ -137,7 +139,7 @@ private:
             bool    setModeInite(robotModeInit_t type);
             bool    setAccelerate(double factor);
             bool    setVelocity(double factor);
-            bool    setTimeTotal(double time);
+            bool    setTimeTotalLimit(double time);
 
             bool    robotStop();
             bool    robotScanLimit();
@@ -164,6 +166,8 @@ private:
             double  getVar1();
             double  getVar2();
             double  getVar3();
+            double  getLenght();
+            double  getTotalTime();
             double  getTimeRun();
             double  getValue(robotParam_t param);
 
@@ -177,10 +181,12 @@ private:
             bool          scan                = false;
             double     x, y, z, roll;
             double     var0, var1, var2, var3;
+            double     lenght;
             double     time_run = 0;
+            double     time_total = 0;
             double     factor_accelerate = 0.3;
             double     factor_velocity      = 0.3;
-            double     time_total               = 10;
+            double     time_total_limit              = 10;
 };
 
 #endif // ROBOTCONTROLL_H

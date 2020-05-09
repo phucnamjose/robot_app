@@ -15,12 +15,16 @@
 #include <QtCharts/QValueAxis>
 #include <QtCharts/QXYLegendMarker>
 #include <QtCharts/QLegendMarker>
+#include <QVector>
 
 #include "debug.hpp"
 #include "robotcontroll.hpp"
 #include "chart.hpp"
 #include "chartview.hpp"
+#include "chartwindow.hpp"
 
+
+#define  ARRAY_DATA_SIZE        (6000)
 
 using namespace std;
 namespace Ui {
@@ -31,74 +35,78 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    /* Function Declare */
-    /* Widget */
+    /*------------------ Function Define----------------- */
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    void    closeEvent (QCloseEvent *event);
-
-
 private:
+    /* Plot */
+    void    plot_init();
+    void    plot_initComboBox();
+    /* Compute */
+
     /* Serial */
     void    serial_init();
+    void    serial_initComboBox();
     void    serial_setDefault();
     void    serial_openPort();
     void    serial_closePort();
     void    logs_write(QString message, QColor c);
-    /* Charts */
-    void    chart_init();
-    void    chart_addSeries();
-    void    chart_removeSeries();
-    void    chart_connectMarkers();
-    void    chart_addData();
+    void    serial_Connect_Clicked();
     /* UI */
-    void    ui_initComboBox();
+
 private slots:
-    // connect timeout timer check
-    void    serial_updatePortName();
-    // connect current text change
-    void    serial_updateSetting();
-    // connect error handle
-    void    serial_handleError(QSerialPort::SerialPortError error);
-    // connect clear log button
-    void    logs_clear();
-    // connect change limit button
-    void    manual_changeLimit();
-    // connect request button
-    void    manual_checkPara_setCommand();
-    // connect robot signal
-    void    serial_logCommand(QByteArray command);
+    // Plot
+    void    plot_figureClosed(ChartWindow *figure);
+    void    plot_Plot_Clicked();
+    //Compute
+    void    compute_init();
+    void    compute_newData();
+    void    compute_Delete_Data_Clicked();   // connect delete Data button
+    // Serial
+    void    serial_updatePortName();    // connect timeout timer check
+    void    serial_updateSetting();    // connect current text change
+    void    serial_handleError(QSerialPort::SerialPortError error);    // connect error handle
+    void    serial_logCommand(QByteArray command);    // connect robot signal
     void    serial_logRespond(QByteArray respond);
-    void    serial_displayPosition(QByteArray respond);
-    void    chart_start(QByteArray respond);
-    void    chart_addPoint(QByteArray respond);
-    void    chart_end(QByteArray respond);
-    // connect chart signal
-    void    chart_handleMarkerClicked();
-    // Button clicked
-    void    on_pushButton_Connect_clicked();
-    /* Camera */
-
-    /* Variable Declare */
-
+    void    serial_displayPosition();
+    void    serial_Change_Limit_Clicked();    // connect change limit button
+    void    serial_Request_Clicked();    // connect request button
+    void    serial_workStart(QByteArray respond);
+    void    serial_workRunning();
+    void    serial_workEnd(QByteArray respond);
+    // UI
+    void    ui_init();
+    void    logs_Clear_Clicked();    // connect clear log button
+    void    closeEvent (QCloseEvent *event);
 
 
-
-    void on_pushButton_Delete_Plot_clicked();
-
+    /* --------------Variable Define--------------- */
 private:
-    Ui::MainWindow    *m_ui                       = nullptr;
+    // Plot
+    QList<QComboBox *> m_x_axis;
+    QList<QComboBox *> m_y_axis;
+    double pre_time_total;
+    double pre_lenght;
+    int   num_chartwindow;
+    QList<ChartWindow *> m_figure;
+    // Compute
+    int  num_sample;
+    QList<QVector<double>*> vec_list;
+    QVector<double> vec_time;
+    QVector<double> vec_pos[9];
+    QVector<double> vec_vel[9];
+    QVector<double> vec_acc[9];
+    double pos_pre[9];
+    double vel_pre[9];
+    double acc_pre[9];
+    // Serial
     RobotControll        *m_robot               = nullptr;
+    QTimer                      *timer_update      = nullptr;
+    // UI
+    Ui::MainWindow    *m_ui                       = nullptr; 
     QLabel                       *m_status               = nullptr;
-    QTimer                      *timer_serial_comboBox  = nullptr;
-
-    QList<QLineSeries *> m_series;
-    Chart                          *m_chart                        = nullptr;
-    QTimer                      *m_timer                       = nullptr;
-    int                                 tick;
 };
 
 #endif // MAINWINDOW_H

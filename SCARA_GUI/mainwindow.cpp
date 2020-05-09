@@ -4,256 +4,291 @@
 #define COMBOBOX_SERIAL_NUM                     (2)
 #define RADIOBUTTON_NUM                               (15)
 #define CHECKBOX_NUM                                         (2)
-#define COMBOBOX_CHARTPARA_NUM          (9)
-
+#define COMBOBOX_PLOT_NUM                         (4)
+#define COMBOBOX_VAR_NUM                            (29)
 
 const char* comboBoxSerial_Name[COMBOBOX_SERIAL_NUM] = {"comboBox_Comport",
-                                                                                                             "comboBox_Baudrate",};
-
-const char* radioButton_Name[RADIOBUTTON_NUM] = {"radioButtion_Stop",
-                                                                                                                     "radioButtion_Scan",
-                                                                                                                     "radioButton_MoveHome",
-                                                                                                                     "radioButton_MoveLine",
-                                                                                                                     "radioButton_MoveCircle",
-                                                                                                                     "radioButton_MoveJoint",
-                                                                                                                     "radioButton_Rotate",
-                                                                                                                     "radioButton_Output",
-                                                                                                                     "radioButton_ReadStatus",
-                                                                                                                     "radioButton_ReadPosition",
-                                                                                                                     "radioButton_Setting",
-                                                                                                                     "radioButton_Absolute",
-                                                                                                                     "radioButton_Relative",
-                                                                                                                     "radioButton_LSPB",
-                                                                                                                     "radioButton_Scurve"};
+                                                                                                                                        "comboBox_Baudrate"};
 
 const char* checkBox_Name[CHECKBOX_NUM] = {"checkBox_Output",
-                                                                                                        "checkBox_Scan"};
+                                                                                                       "checkBox_Scan"};
 
-const char* comboBoxChartPara_Name[COMBOBOX_CHARTPARA_NUM] = {
-                                                                                                                    "None",
-                                                                                                                     "Var 0 (rad)",
-                                                                                                                     "Var 1 (rad)",
-                                                                                                                     "Var 2 (mm)",
-                                                                                                                     "Var 3 (rad)",
-                                                                                                                     "X (mm)",
-                                                                                                                     "Y (mm)",
-                                                                                                                     "Z (mm)",
-                                                                                                                     "Roll (rad)"};
+const char* comboBoxPlot_X_Name[COMBOBOX_PLOT_NUM] = { "comboBox_Chart1_x",
+                                                                                                                                        "comboBox_Chart2_x",
+                                                                                                                                        "comboBox_Chart3_x",
+                                                                                                                                        "comboBox_Chart4_x"};
+
+const char* comboBoxPlot_Y_Name[COMBOBOX_PLOT_NUM] = { "comboBox_Chart1_y",
+                                                                                                                                       "comboBox_Chart2_y",
+                                                                                                                                       "comboBox_Chart3_y",
+                                                                                                                                       "comboBox_Chart4_y"};
+
+const char* comboBoxPlot_Var[COMBOBOX_VAR_NUM] = {  "None",
+                                                                                                                                  "Time (second)",
+                                                                                                                                  "Position Var 0 (rad)",
+                                                                                                                                  "Position Var 1 (rad)",
+                                                                                                                                  "Position Var 2 (mm)",
+                                                                                                                                  "Position Var 3 (rad)",
+                                                                                                                                  "Position X (mm)",
+                                                                                                                                  "Position Y (mm)",
+                                                                                                                                   "Position Z (mm)",
+                                                                                                                                   "Position Roll (rad)",
+                                                                                                                                   "Position 3D (mm)",
+                                                                                                                                   "Velocity Var 0 (rad/s)",
+                                                                                                                                   "Velocity Var 1 (rad/s)",
+                                                                                                                                    "Velocity Var 2 (mm/s)",
+                                                                                                                                    "Velocity Var 3 (rad/s)",
+                                                                                                                                    "Velocity X (mm/s)",
+                                                                                                                                    "Velocity Y (mm/s)",
+                                                                                                                                    "Velocity Z (mm/s)",
+                                                                                                                                    "Velocity Roll (rad/s)",
+                                                                                                                                    "Velocity 3D (mm/s)",
+                                                                                                                                    "Accelerate Var 0 (rad/s2)",
+                                                                                                                                    "Accelerate Var 1 (rad/s2)",
+                                                                                                                                    "Accelerate Var 2 (mm/s2)",
+                                                                                                                                    "Accelerate Var 3 (rad/s2)",
+                                                                                                                                    "Accelerate X (mm/s2)",
+                                                                                                                                    "Acceleratey Y (mm/s2)",
+                                                                                                                                    "Accelerate Z (mm/s2)",
+                                                                                                                                    "Accelerate Roll (rad/s2)",
+                                                                                                                                    "Accelerate 3D (mm/s2)"};
 
 
 MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     m_ui(new Ui::MainWindow),
-    m_robot(new RobotControll(this)),
-    m_status(new QLabel),
-    m_chart(new Chart)
+    m_robot(new RobotControll(this))
 {
     m_ui->setupUi(this);
-    m_ui->statusBar->addWidget(m_status);
+    plot_init();
     serial_init();
-    ui_initComboBox();
-    chart_init();
+    ui_init();
+    compute_init();
+    qDebug() << "Program START \n";
 }
 
 MainWindow::~MainWindow()
 {
+    for(ChartWindow *figure : m_figure) {
+        delete figure;
+    }
     delete m_ui;
     delete m_robot;
-    delete m_status;
-    delete m_chart;
+    delete timer_update;
 }
 
-    /*-- ROBOT DECLARE --*/
-void MainWindow::chart_init() {
-    // Firstly, add series, very impotant
-    chart_addSeries();
-    chart_addSeries();
-    chart_addSeries();
-    chart_addSeries();
+    /*-------------------------- DECLARE -----------------------------*/
 
-    m_series.at(0)->setColor(QColor(230,0,0));
-    m_series.at(1)->setColor(QColor(0,120,0));
-    m_series.at(2)->setColor(QColor(0,0,180));
-    m_series.at(3)->setColor(QColor(0,0,0));
-
-    m_chart->createDefaultAxes();
-    m_chart->setTitle("Parameters");
-    m_chart->setAnimationOptions(QChart::SeriesAnimations);
-
-    m_chart->legend()->setVisible(true);
-    m_chart->legend()->setAlignment(Qt::AlignBottom);
-
-    ChartView *chartView = new ChartView(m_chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-
-    m_ui->horizontalFrame->grabGesture(Qt::PanGesture);
-    m_ui->horizontalFrame->grabGesture(Qt::PinchGesture);
-
-    chartView->setParent(m_ui->horizontalFrame);
-    m_chart->axisX()->setRange(0, 10);
-    m_chart->axisY()->setRange(-4, 4);
-
-    chart_connectMarkers();
+/*---- Ploting -----*/
+void MainWindow::plot_init() {
+    num_chartwindow = 1;
+    plot_initComboBox();
+     // SIGNAL & SLOT
+    connect(m_ui->pushButton_Plot, &QPushButton::clicked, this, &MainWindow::plot_Plot_Clicked);
 }
 
-void  MainWindow::chart_addSeries() {
-    QLineSeries *series = new QLineSeries();
-    m_series.append(series);
-    series->setName(QString("Line " + QString::number(m_series.count())));
-    m_chart->addSeries(series);
-
-    if (m_series.count() == 1)
-        m_chart->createDefaultAxes();
-}
-
-void  MainWindow::chart_removeSeries() {
-    // Remove last series from chart
-    if (m_series.count() > 0) {
-        QLineSeries *series = m_series.last();
-        m_chart->removeSeries(series);
-        m_series.removeLast();
-        delete series;
-    }
-}
-
-void  MainWindow::chart_connectMarkers() {
-    // Connect all markers to handler
-    const auto markers = m_chart->legend()->markers();
-    for (QLegendMarker *marker : markers) {
-        // Disconnect possible existing connection to avoid multiple connections
-        QObject::disconnect(marker, &QLegendMarker::clicked,
-                            this, &MainWindow::chart_handleMarkerClicked);
-        QObject::connect(marker, &QLegendMarker::clicked, this, &MainWindow::chart_handleMarkerClicked);
-    }
-}
-
-void  MainWindow::chart_handleMarkerClicked() {
-        QLegendMarker* marker = qobject_cast<QLegendMarker*> (sender());
-        Q_ASSERT(marker);
-
-        switch (marker->type())
-        {
-            case QLegendMarker::LegendMarkerTypeXY:
-            {
-            // Toggle visibility of series
-            marker->series()->setVisible(!marker->series()->isVisible());
-
-            // Turn legend marker back to visible, since hiding series also hides the marker
-            // and we don't want it to happen now.
-            marker->setVisible(true);
-
-            // Dim the marker, if series is not visible
-            qreal alpha = 1.0;
-
-            if (!marker->series()->isVisible())
-                alpha = 0.5;
-
-            QColor color;
-            QBrush brush = marker->labelBrush();
-            color = brush.color();
-            color.setAlphaF(alpha);
-            brush.setColor(color);
-            marker->setLabelBrush(brush);
-
-            brush = marker->brush();
-            color = brush.color();
-            color.setAlphaF(alpha);
-            brush.setColor(color);
-            marker->setBrush(brush);
-
-            QPen pen = marker->pen();
-            color = pen.color();
-            color.setAlphaF(alpha);
-            pen.setColor(color);
-            marker->setPen(pen);
-            break;
-            }
-        default:
-            {
-            qDebug() << "Unknown marker type";
-            break;
-            }
+void MainWindow::plot_initComboBox() {
+    // X Axis
+    for (int i = 0; i < COMBOBOX_PLOT_NUM; ++i) {
+        QComboBox* comboBox;
+        comboBox = this->findChild<QComboBox*>(comboBoxPlot_X_Name[i]);
+        if(comboBox != nullptr) {
+             comboBox->addItem(comboBoxPlot_Var[0], QVariant(-1));// None
+             comboBox->addItem(comboBoxPlot_Var[1], QVariant(0));// Time
+             comboBox->addItem(comboBoxPlot_Var[6], QVariant(5));// X
+             m_x_axis.append(comboBox);
         }
-}
-
-void  MainWindow::chart_start(QByteArray respond) {
-    chart_addData();
-    logs_write(tr(respond), QColor(160,80,190));
-}
-
-void  MainWindow::chart_addPoint(QByteArray respond) {
-    chart_addData();
-}
-
-void  MainWindow:: chart_end(QByteArray respond) {
-    chart_addData();
-    logs_write(tr(respond), QColor(160,80,190));
-}
-
-void  MainWindow:: chart_addData() {
-    // Line 1
-    if (m_ui->comboBox_Line1->currentText() != QString("None")) {
-         double value;
-         value = m_robot->getValue((RobotControll::robotParam_t)m_ui->comboBox_Line1->currentData().toInt());
-         m_series.at(0)->append(m_robot->getTimeRun(), value);
     }
-    // Line 2
-    if (m_ui->comboBox_Line2->currentText() != QString("None")) {
-         double value;
-         value = m_robot->getValue((RobotControll::robotParam_t)m_ui->comboBox_Line2->currentData().toInt());
-         m_series.at(1)->append(m_robot->getTimeRun(), value);
+    // Y Axis
+    for (int i = 0; i < COMBOBOX_PLOT_NUM; ++i) {
+        QComboBox* comboBox;
+        comboBox = this->findChild<QComboBox*>(comboBoxPlot_Y_Name[i]);
+        if(comboBox != nullptr) {
+            for (int j = 0; j < COMBOBOX_VAR_NUM; ++j) {
+                comboBox->addItem(comboBoxPlot_Var[j], QVariant(j - 1));
+            }
+            m_y_axis.append(comboBox);
+        }
     }
-    // Line 3
-    if (m_ui->comboBox_Line3->currentText() != QString("None")) {
-         double value;
-         value = m_robot->getValue((RobotControll::robotParam_t)m_ui->comboBox_Line3->currentData().toInt());
-         m_series.at(2)->append(m_robot->getTimeRun(), value);
-    }
-    // Line 4
-    if (m_ui->comboBox_Line4->currentText() != QString("None")) {
-         double value;
-         value = m_robot->getValue((RobotControll::robotParam_t)m_ui->comboBox_Line4->currentData().toInt());
-         m_series.at(3)->append(m_robot->getTimeRun(), value);
+    if (m_x_axis.count() != m_y_axis.count()) {
+        QMessageBox::critical(this, tr("Error"), tr("Number ComboBox  is not equal"));
     }
 }
 
-/*----Serial -----*/
+void MainWindow::plot_Plot_Clicked()
+{
+    // create figure
+    ChartWindow *figure = new ChartWindow(this);
+    figure->setWindowTitle(QString(tr("Figure ")) + QString::number(num_chartwindow));
+    num_chartwindow++;
+    // set figure
+    for (int i = 0; i < m_x_axis.count(); ++i) {
+        QComboBox *comboBox_X = m_x_axis.at(i);
+        QComboBox *comboBox_Y = m_y_axis.at(i);
+        if (comboBox_X->currentText() != QString("None") && comboBox_Y->currentText() != QString("None")) {
+                QString x_name, y_name;
+                int x_var, y_var;
+                x_name = comboBox_X->currentText();
+                y_name = comboBox_Y->currentText();
+                x_var = comboBox_X->currentData().toInt();
+                y_var = comboBox_Y->currentData().toInt();
+                figure->addChart(x_var, y_var, x_name, y_name);
+                // add points
+                figure->addPoint(i, *vec_list.at(x_var), *vec_list.at(y_var));
+                figure->setRangeFit(i);
+        }
+    }
+    figure->show();
+    m_figure.append(figure);
+    // signals & slot
+    connect(figure, &ChartWindow::figureClosed, this, &MainWindow::plot_figureClosed);
+}
+
+void MainWindow::plot_figureClosed(ChartWindow *figure) {
+    m_figure.removeOne(figure);
+}
+
+/*---- Computing Data -----*/
+void MainWindow::compute_init() {
+    num_sample = 0;
+    pre_time_total = 0;
+    pre_lenght = 0;
+    // Init size
+    vec_time.resize(6000);
+    vec_time.clear();
+    for (int i = 0; i < 9; ++i) {
+        vec_pos[i].resize(6000);
+        vec_pos[i].clear();
+    }
+    for (int i = 0; i < 9; ++i) {
+        vec_vel[i].resize(6000);
+        vec_vel[i].clear();
+    }
+    for (int i = 0; i < 9; ++i) {
+        vec_acc[i].resize(6000);
+        vec_acc[i].clear();
+    }
+    // Add to list
+    vec_list.clear();
+    vec_list.append(&vec_time);
+    for (int i = 0; i < 9; ++i) {
+        vec_list.append(&vec_pos[i]);
+    }
+    for (int i = 0; i < 9; ++i) {
+        vec_list.append(&vec_vel[i]);
+    }
+    for (int i = 0; i < 9; ++i) {
+        vec_list.append(&vec_acc [i]);
+    }
+    // Signal & Slot
+    connect(m_ui->pushButton_Delete_Data, &QPushButton::clicked,
+                        this, &MainWindow::compute_Delete_Data_Clicked);
+}
+
+void MainWindow::compute_newData() {
+    double time, total_time, pos[9], vel[9], acc[9];
+    total_time = m_robot->getTotalTime();
+    time = m_robot->getTimeRun();
+    pos[0]  = m_robot->getVar0();
+    pos[1]  = m_robot->getVar1();
+    pos[2]  = m_robot->getVar2();
+    pos[3]  = m_robot->getVar3();
+    pos[4]  = m_robot->getX();
+    pos[5]  = m_robot->getY();
+    pos[6]  = m_robot->getZ();
+    pos[7]  = m_robot->getRoll();
+    pos[8] = m_robot->getLenght() + pre_lenght;
+    if( 0 == num_sample) {
+        for (int i = 0; i < 9; ++i) {
+            vel[i] = 0;
+            acc[i] = 0;
+        }
+    } else {
+        for (int i = 0; i < 9; ++i) {
+            vel[i]  = (pos[i] - pos_pre[i])*100;
+            acc[i] = (vel[i] - vel_pre[i])*100;
+        }
+    }
+    // Save value;
+    vec_time.append(time +  pre_time_total);
+    for (int i = 0; i < 9; ++i) {
+        vec_pos[i].append(pos[i]);
+        vec_vel[i].append(vel[i]);
+        vec_acc[i].append(acc[i]);
+    }
+    // Plot new point
+    for( ChartWindow *figure : m_figure) {
+        for( int  i = 0;  i < figure->var_list.count(); ++i) {
+            double x_value = (*vec_list.at(figure->var_list.at(i).first)).last();
+            double y_value = (*vec_list.at(figure->var_list.at(i).second)).last();
+            figure->addPoint(i, x_value, y_value);
+        }
+    }
+    // Update previos value
+    for (int i = 0; i < 9; ++i) {
+        pos_pre[i] = pos[i];
+        vel_pre[i] = vel[i];
+        acc_pre[i] = acc[i];
+    }
+    num_sample++;
+    m_ui->progressBar_Running->setValue(ceil(time/total_time*1000));
+}
+
+void MainWindow::compute_Delete_Data_Clicked() {
+    for (int i = 0; i < 28; ++i) {
+        (*(vec_list.at(i))).clear();
+    }
+    pre_time_total = 0;
+    pre_lenght = 0;
+    QMessageBox::information(this, tr("Inform"), tr("Data vector is deleted"));
+}
+
+/*---- Serial -----*/
 void MainWindow::serial_init() {
     serial_updatePortName();
     serial_updateSetting();
-    m_status->setText(tr("No Robot Device"));
+    serial_initComboBox();
+    // signals & slot
+    connect(m_ui->pushButton_Change_Limit, &QPushButton::clicked,
+                        this, &MainWindow::serial_Change_Limit_Clicked);
+    connect(m_ui->pushButton_Request, &QPushButton::clicked,
+                        this, &MainWindow::serial_Request_Clicked);
+    connect(m_ui->pushButton_Connect, &QPushButton::clicked,
+                        this, &MainWindow::serial_Connect_Clicked);
 
-    // SIGNAL & SLOT
-    connect(m_ui->pushButton_LogsClear, &QPushButton::clicked, this, &MainWindow::logs_clear);
-    connect(m_ui->pushButton_Change_Limit, &QPushButton::clicked, this, &MainWindow::manual_changeLimit);
-    connect(m_ui->pushButton_Request, &QPushButton::clicked, this, &MainWindow::manual_checkPara_setCommand);
     connect(m_robot, &RobotControll::commandSend, this, &MainWindow::serial_logCommand);
     connect(m_robot, &RobotControll::respondArrived, this, &MainWindow::serial_logRespond);
-    connect(m_robot, &RobotControll::respondPosition, this, &MainWindow::serial_displayPosition);
     connect(m_robot, &RobotControll::respondPosition, this, &MainWindow::serial_logRespond);
-    connect(m_robot, &RobotControll::commandWorkStart, this, &MainWindow::chart_start);
-    connect(m_robot, &RobotControll::commandWorkRunning, this, &MainWindow::chart_addPoint);
-    connect(m_robot, &RobotControll::commandWorkRunning, this, &MainWindow::serial_displayPosition);
-    connect(m_robot, &RobotControll::commandWorkDone, this, &MainWindow::chart_end);
-    connect(m_robot, &RobotControll::commandWorkDone, this, &MainWindow::serial_displayPosition);
+    connect(m_robot, &RobotControll::respondPosition, this, &MainWindow::serial_displayPosition);
+    connect(m_robot, &RobotControll::commandWorkStart, this, &MainWindow::serial_workStart);
+    connect(m_robot, &RobotControll::commandWorkRunning, this, &MainWindow::serial_workRunning);
+    connect(m_robot, &RobotControll::commandWorkDone, this, &MainWindow::serial_workEnd);
+    // create timer to update what comboBox PortName change
+    timer_update = new QTimer(this);
+    connect(timer_update, &QTimer::timeout, this, &MainWindow::serial_updatePortName);
+    timer_update->start(1000);
+}
 
-    timer_serial_comboBox = new QTimer(this);
-    connect(timer_serial_comboBox, &QTimer::timeout, this, &MainWindow::serial_updatePortName);
-    timer_serial_comboBox->start(1000);
+void MainWindow::serial_initComboBox() {
+    // Update Comport, Baudrate
+    for(int i = 0; i < COMBOBOX_SERIAL_NUM; ++i) {
+        connect(this->findChild<QComboBox*>(comboBoxSerial_Name[i]), &QComboBox::currentTextChanged,
+                this, &MainWindow::serial_updateSetting, Qt::QueuedConnection);
+    }
+    m_ui->comboBox_Baudrate->addItem(QStringLiteral("115200"), QSerialPort::Baud115200);
+    m_ui->comboBox_Baudrate->addItem(QStringLiteral("9600"), QSerialPort::Baud9600);
+    m_ui->comboBox_Baudrate->addItem(QStringLiteral("19200"), QSerialPort::Baud19200);
+    m_ui->comboBox_Baudrate->addItem(QStringLiteral("38400"), QSerialPort::Baud38400);
 }
 
 void MainWindow::serial_openPort() {
     if(m_robot->open(QIODevice::ReadWrite)) {
-        timer_serial_comboBox->stop();
+        timer_update->stop();
         m_ui->comboBox_Baudrate->setEnabled(false);
         m_ui->comboBox_Comport->setEnabled(false);
         m_ui->pushButton_Connect->setText(tr("DISCONNECT"));
         m_ui->label_connectStatus->setText(tr("Connected"));
-        m_status->setText(tr("Connected to %1 : %2")
-                          .arg(m_ui->comboBox_Comport->currentText())
-                          .arg(m_ui->comboBox_Baudrate->currentText()));
     } else {
         QMessageBox::critical(this, tr("Error"), m_robot->errorString());
-        m_status->setText(tr("Open error"));
     }
 }
 
@@ -264,11 +299,9 @@ void MainWindow::serial_closePort() {
         m_ui->comboBox_Comport->setEnabled(true);
         m_ui->pushButton_Connect->setText("CONNECT");
         m_ui->label_connectStatus->setText(tr("Disconnected"));
-        timer_serial_comboBox->start(1000);
-        m_status->setText(tr("No Robot Device"));
+        timer_update->start(1000);
     } else {
         QMessageBox::critical(this, tr("Error"), m_robot->errorString());
-        m_status->setText(tr("No Robot Device"));
     }
 }
 
@@ -314,7 +347,49 @@ void MainWindow::serial_handleError(QSerialPort::SerialPortError error)
     }
 }
 
-void MainWindow::manual_changeLimit() {
+void MainWindow::serial_logCommand(QByteArray command) {
+    logs_write(tr(command), QColor(0,0,140));
+}
+
+void MainWindow::serial_logRespond(QByteArray respond) {
+     logs_write(tr(respond), QColor(230,0,0));
+}
+
+void MainWindow::serial_displayPosition() {
+    double var0, var1, var3, roll;
+    if (m_ui->radioButton_Degree->isChecked()) {
+        var0 = m_robot->getVar0()/M_PI*180.0;
+        var1 = m_robot->getVar1()/M_PI*180.0;
+        var3 = m_robot->getVar3()/M_PI*180.0;
+        roll   = m_robot->getRoll()/M_PI*180.0;
+    } else {
+        var0 = m_robot->getVar0();
+        var1 = m_robot->getVar1();
+        var3 = m_robot->getVar3();
+        roll   = m_robot->getRoll();
+    }
+    if (m_robot->isScan()) {
+        m_ui->textEdit_Theta1->setText(QString::number(var0));
+        m_ui->textEdit_Theta2->setText(QString::number(var1));
+        m_ui->textEdit_D3->setText(QString::number(m_robot->getVar2()));
+        m_ui->textEdit_Theta4->setText(QString::number(var3));
+        m_ui->textEdit_X->setText(QString::number(m_robot->getX()));
+        m_ui->textEdit_Y->setText(QString::number(m_robot->getY()));
+        m_ui->textEdit_Z->setText(QString::number(m_robot->getZ()));
+        m_ui->textEdit_Roll->setText(QString::number(roll));
+    }
+}
+
+void MainWindow::serial_Connect_Clicked()
+{
+    if(m_ui->pushButton_Connect->text() == "CONNECT") {
+        serial_openPort();
+    } else {
+        serial_closePort();
+    }
+}
+
+void MainWindow::serial_Change_Limit_Clicked() {
     bool isDouble1, isDouble2, isDouble3;
     double  factor_v, factor_a, time;
     factor_v       = m_ui->textEdit_Velocity_Limit->toPlainText().toDouble(&isDouble1);
@@ -356,7 +431,7 @@ void MainWindow::manual_changeLimit() {
             if ( (time > 0.0) && (time < 20)) {
                 m_robot->setModeInite(RobotControll::MODE_INIT_QVT);
                 m_robot->setVelocity(factor_v);
-                m_robot->setTimeTotal(time);
+                m_robot->setTimeTotalLimit(time);
                 // Logs
                 logs_write(tr("Changed: Mode QVT veloc %1, total time %2s").arg(factor_v).arg(time),
                                         QColor(0,140,0));
@@ -371,7 +446,7 @@ void MainWindow::manual_changeLimit() {
     }
 }
 
-void MainWindow::manual_checkPara_setCommand() {
+void MainWindow::serial_Request_Clicked() {
     // Check
     if (!(m_robot->isOpen()))  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
@@ -509,37 +584,55 @@ void MainWindow::manual_checkPara_setCommand() {
     }
 }
 
-void MainWindow::serial_logCommand(QByteArray command) {
-    logs_write(tr(command), QColor(0,0,140));
+void MainWindow::serial_workStart(QByteArray respond) {
+    compute_newData();
+    serial_displayPosition();
+    logs_write(respond, QColor(220, 80, 115));
+    // Set X range
+    for( ChartWindow *figure : m_figure) {
+        for( int  i = 0;  i < figure->var_list.count(); ++i) {
+            if (figure->var_list.at(i).first == 0)
+            {
+                figure->setRangeX(i, 0, ceil(m_robot->getTotalTime()) + pre_time_total);
+            } else if (figure->var_list.at(i).first == 5) {
+                figure->setRangeX(i, 0, 270);
+                figure->setRangeY(i, -270 , 270);
+            }
+        }
+    }
 }
 
-void  MainWindow::serial_logRespond(QByteArray respond) {
-     logs_write(tr(respond), QColor(230,0,0));
+void MainWindow::serial_workRunning() {
+    compute_newData();
+    serial_displayPosition();
 }
 
-void  MainWindow:: serial_displayPosition(QByteArray respond) {
-    double var0, var1, var3, roll;
-    if (m_ui->radioButton_Degree->isChecked()) {
-        var0 = m_robot->getVar0()/M_PI*180.0;
-        var1 = m_robot->getVar1()/M_PI*180.0;
-        var3 = m_robot->getVar3()/M_PI*180.0;
-        roll   = m_robot->getRoll()/M_PI*180.0;
-    } else {
-        var0 = m_robot->getVar0();
-        var1 = m_robot->getVar1();
-        var3 = m_robot->getVar3();
-        roll   = m_robot->getRoll();
+void MainWindow::serial_workEnd(QByteArray respond) {
+    compute_newData();
+    serial_displayPosition();
+    logs_write(respond, QColor(220, 80, 115));
+    num_sample = 0;
+    m_ui->progressBar_Running->setValue(0);
+    // Fit all chart
+    for( ChartWindow *figure : m_figure) {
+        for( int  i = 0;  i < figure->var_list.count(); ++i) {
+            if (figure->var_list.at(i).first == 0)
+            {
+                figure->setRangeFit(i);
+            } else if (figure->var_list.at(i).first == 5) {
+                figure->setRangeX(i, 0, 270);
+                figure->setRangeX(i, -270 , 270);
+            }
+        }
     }
-    if (m_robot->isScan()) {
-        m_ui->textEdit_Theta1->setText(QString::number(var0));
-        m_ui->textEdit_Theta2->setText(QString::number(var1));
-        m_ui->textEdit_D3->setText(QString::number(m_robot->getVar2()));
-        m_ui->textEdit_Theta4->setText(QString::number(var3));
-        m_ui->textEdit_X->setText(QString::number(m_robot->getX()));
-        m_ui->textEdit_Y->setText(QString::number(m_robot->getY()));
-        m_ui->textEdit_Z->setText(QString::number(m_robot->getZ()));
-        m_ui->textEdit_Roll->setText(QString::number(roll));
-    }
+    pre_time_total  = vec_time.last();
+    pre_lenght = vec_pos[8].last();
+}
+
+/*----UI -----*/
+void MainWindow:: ui_init() {
+    connect(m_ui->pushButton_LogsClear, &QPushButton::clicked,
+                        this, &MainWindow::logs_Clear_Clicked);
 }
 
 void MainWindow::logs_write(QString message, QColor c) {
@@ -553,50 +646,8 @@ void MainWindow::logs_write(QString message, QColor c) {
     m_ui->textEdit_Logs->ensureCursorVisible(); // Scroll to bottom automaticly
 }
 
-void MainWindow::logs_clear() {
+void MainWindow::logs_Clear_Clicked() {
     m_ui->textEdit_Logs->clear();
-}
-
-void MainWindow::ui_initComboBox() {
-    // Chart Parameters
-    for(int i = 0; i < COMBOBOX_CHARTPARA_NUM; ++i) {
-         m_ui->comboBox_Line1->addItem(QString(comboBoxChartPara_Name[i]), i -1);
-    }
-    for(int i = 0; i < COMBOBOX_CHARTPARA_NUM; ++i) {
-         m_ui->comboBox_Line2->addItem(QString(comboBoxChartPara_Name[i]), i -1);
-    }
-    for(int i = 0; i < COMBOBOX_CHARTPARA_NUM; ++i) {
-         m_ui->comboBox_Line3->addItem(QString(comboBoxChartPara_Name[i]), i -1);
-    }
-    for(int i = 0; i < COMBOBOX_CHARTPARA_NUM; ++i) {
-         m_ui->comboBox_Line4->addItem(QString(comboBoxChartPara_Name[i]), i -1);
-    }
-    // Update Comport, Baudrate
-    for(int i = 0; i < COMBOBOX_SERIAL_NUM; ++i) {
-        connect(this->findChild<QComboBox*>(comboBoxSerial_Name[i]), &QComboBox::currentTextChanged,
-                this, &MainWindow::serial_updateSetting, Qt::QueuedConnection);
-    }
-
-    m_ui->comboBox_Baudrate->addItem(QStringLiteral("115200"), QSerialPort::Baud115200);
-    m_ui->comboBox_Baudrate->addItem(QStringLiteral("9600"), QSerialPort::Baud9600);
-    m_ui->comboBox_Baudrate->addItem(QStringLiteral("19200"), QSerialPort::Baud19200);
-    m_ui->comboBox_Baudrate->addItem(QStringLiteral("38400"), QSerialPort::Baud38400);
-}
-
-void MainWindow::on_pushButton_Connect_clicked()
-{
-    if(m_ui->pushButton_Connect->text() == "CONNECT") {
-        serial_openPort();
-    } else {
-        serial_closePort();
-    }
-}
-
-void MainWindow::on_pushButton_Delete_Plot_clicked()
-{
-    for(QLineSeries *series : m_series) {
-        series->clear();
-    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

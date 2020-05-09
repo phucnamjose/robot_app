@@ -115,6 +115,7 @@ void RobotControll::readData() {
             // Unpack Payload
             if ( this->unPackData(temp) == false ) {
                 M_DEBUG("unpack fail");
+                M_DEBUG(qbyteArray2string(temp));
                 continue;
                 //Debug::_delete(temp, data);
             }
@@ -122,7 +123,7 @@ void RobotControll::readData() {
                 M_DEBUG("error frame");
                 continue;
             }
-            M_DEBUG(qbyteArray2string(temp));
+            //M_DEBUG(qbyteArray2string(temp));
         }
     } else {
         M_DEBUG("no device");
@@ -200,9 +201,9 @@ bool   RobotControll::processRespond(QByteArray &repsond) {
 }
 
 bool   RobotControll::list2position(QByteArrayList list) {
-    double value[9];
-    bool isdouble[9];
-    if (list.length() != 11) {
+    double value[11];
+    bool isdouble[11];
+    if (list.length() != 13) {
         return false;
     }
     for (int i = 2; i < list.length() ; ++i) {
@@ -219,7 +220,9 @@ bool   RobotControll::list2position(QByteArrayList list) {
     y        = value[5];
     z        = value[6];
     roll    = value[7];
-    time_run = value[8];
+    lenght = value[8];
+    time_total = value[9];
+    time_run = value[10];
     return true;
 }
 
@@ -258,40 +261,6 @@ bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para)
     return true;
 }
 
-//void RobotControll::updateStatus(QString response) {
-//    QStringList listRes = response.split(QRegExp("[:]"),
-//                                         QString::SplitBehavior::SkipEmptyParts );
-//    QString stt = listRes.at(1);
-//    for(int i = 0; i < NumOfStt - 1; i++) {
-//        if( stt == ROBOTSTATUS[i]) {
-//            robot_stt = static_cast<robotStatus_t>(i);
-//            M_DEBUG(ROBOTSTATUS[robot_stt]);
-//            return;
-//        }
-//    }
-//    stt.clear();
-//    stt.resize(0);
-//    listRes.clear();
-//}
-
-//bool RobotControll::setCommandNWait(robotCommand_t cmd, const QString para)
-//{
-//    if( this->setCommand(cmd, 3000, para) == false) {
-//        M_DEBUG("can't set command");
-//        return false;
-//    }
-//    QEventLoop loop;
-//    connect( this, &RobotControll::commandWorkDone, &loop, &QEventLoop::quit );
-//    connect( this, &RobotControll::commandTimeOut, &loop, &QEventLoop::quit );
-//    loop.exec();
-//    if(this->isTimeOut()) {
-//        M_DEBUG("work haven't done yet");
-//        return false;
-//    }
-//    M_DEBUG("command done");
-//    return true;
-//}
-
 /* For user */
 void RobotControll::robotResetId() {
     id_command = 1;
@@ -324,9 +293,9 @@ bool    RobotControll::setVelocity(double factor) {
     }
 }
 
-bool    RobotControll::setTimeTotal(double time) {
+bool    RobotControll::setTimeTotalLimit(double time) {
     if ( time > 0 && time <30) {
-        time_total = time;
+        time_total_limit = time;
         return true;
     } else {
         return false;
@@ -359,7 +328,7 @@ bool RobotControll::robotMoveLine(double x, double y, double z, double roll){
     if (mode_init == MODE_INIT_QVA) {
         temp = factor_accelerate;
     } else {
-        temp = time_total;
+        temp = time_total_limit;
     }
     if(this->setCommand(this->CMD_MOVE_LINE, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
                               .arg(x)
@@ -381,7 +350,7 @@ bool RobotControll::robotMoveCircle(double x, double y, double z, double roll,
     if (mode_init == MODE_INIT_QVA) {
         temp = factor_accelerate;
     } else {
-        temp = time_total;
+        temp = time_total_limit;
     }
     if(this->setCommand(this->CMD_MOVE_CIRCLE, 1000, tr("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11")
                                               .arg(x)
@@ -405,7 +374,7 @@ bool RobotControll::robotMoveJoint( double x, double y, double z, double roll){
     if (mode_init == MODE_INIT_QVA) {
         temp = factor_accelerate;
     } else {
-        temp = time_total;
+        temp = time_total_limit;
     }
     if(this->setCommand(this->CMD_MOVE_JOINT, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
                                               .arg(x)
@@ -425,7 +394,7 @@ bool RobotControll::robotRotateSingleJoint(int joint, double angle) {
     if (mode_init == MODE_INIT_QVA) {
         temp = factor_accelerate;
     } else {
-        temp = time_total;
+        temp = time_total_limit;
     }
     if(this->setCommand(this->CMD_ROTATE_SINGLE, 1000, tr("%1 %2 %3 %4 %5")
                               .arg(joint)
@@ -502,6 +471,12 @@ double  RobotControll::getValue(robotParam_t param) {
     case Param_Roll:
         return roll;
         break;
+    case Param_Lenght:
+        return lenght;
+        break;
+    case Param_Time_Total:
+        return time_total;
+        break;
     case Param_TimeRun:
         return  time_run;
         break;
@@ -541,6 +516,14 @@ double RobotControll::getVar2(){
 
 double RobotControll::getVar3(){
     return var3;
+}
+
+double RobotControll::getLenght() {
+     return lenght;
+}
+
+double RobotControll::getTotalTime() {
+    return time_total;
 }
 
 double RobotControll:: getTimeRun() {

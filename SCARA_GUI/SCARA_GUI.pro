@@ -17,6 +17,7 @@ TEMPLATE = app
 SOURCES += main.cpp\
     chart.cpp \
     chartview.cpp \
+    chartwindow.cpp \
         mainwindow.cpp \
     robotcontroll.cpp \
     debug.cpp
@@ -24,8 +25,10 @@ SOURCES += main.cpp\
 HEADERS  += \
     chart.hpp \
     chartview.hpp \
+    chartwindow.hpp \
     debug.hpp \
     mainwindow.hpp \
     robotcontroll.hpp
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    chartwindow.ui
