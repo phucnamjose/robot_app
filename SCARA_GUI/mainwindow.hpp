@@ -76,6 +76,7 @@ private slots:
     void    serial_workStart(QByteArray respond);
     void    serial_workRunning();
     void    serial_workEnd(QByteArray respond);
+    void    serial_startUpCommand();
     // UI
     void    ui_init();
     void    logs_Clear_Clicked();    // connect clear log button

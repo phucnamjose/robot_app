@@ -183,6 +183,7 @@ public:
     QRadioButton *radioButton_Setting;
     QPushButton *pushButton_Request;
     QProgressBar *progressBar_Running;
+    QPushButton *pushButton_Startup;
     QWidget *tab2_Plot;
     QWidget *layoutWidget6;
     QVBoxLayout *verticalLayout_Plot;
@@ -1091,6 +1092,9 @@ public:
         progressBar_Running->setMaximum(1000);
         progressBar_Running->setValue(0);
         progressBar_Running->setTextVisible(false);
+        pushButton_Startup = new QPushButton(groupBox_Command);
+        pushButton_Startup->setObjectName(QStringLiteral("pushButton_Startup"));
+        pushButton_Startup->setGeometry(QRect(10, 390, 111, 23));
 
         gridLayout_5->addWidget(groupBox_Command, 1, 0, 1, 2);
 
@@ -1231,11 +1235,11 @@ public:
         groupBox_Information->setTitle(QApplication::translate("MainWindow", "Information", Q_NULLPTR));
         label_X_3->setText(QApplication::translate("MainWindow", "Theta1", Q_NULLPTR));
         label_Y_3->setText(QApplication::translate("MainWindow", "Theta2", Q_NULLPTR));
-        label_Z_5->setText(QApplication::translate("MainWindow", "D3", Q_NULLPTR));
+        label_Z_5->setText(QApplication::translate("MainWindow", "D3(mm)", Q_NULLPTR));
         label_Z_3->setText(QApplication::translate("MainWindow", "Theta4", Q_NULLPTR));
-        label_X_2->setText(QApplication::translate("MainWindow", "X", Q_NULLPTR));
-        label_Y_2->setText(QApplication::translate("MainWindow", "Y", Q_NULLPTR));
-        label_Z_2->setText(QApplication::translate("MainWindow", "Z", Q_NULLPTR));
+        label_X_2->setText(QApplication::translate("MainWindow", "X(mm)", Q_NULLPTR));
+        label_Y_2->setText(QApplication::translate("MainWindow", "Y(mm)", Q_NULLPTR));
+        label_Z_2->setText(QApplication::translate("MainWindow", "Z(mm)", Q_NULLPTR));
         label_Roll_2->setText(QApplication::translate("MainWindow", "ROLL", Q_NULLPTR));
         radioButton_Degree->setText(QApplication::translate("MainWindow", "Deg", Q_NULLPTR));
         radioButton_Radian->setText(QApplication::translate("MainWindow", "Rad", Q_NULLPTR));
@@ -1249,20 +1253,20 @@ public:
         groupBox_Rotate->setTitle(QApplication::translate("MainWindow", "Rotate", Q_NULLPTR));
         label_Rotate->setText(QApplication::translate("MainWindow", "ROTATE", Q_NULLPTR));
         label_Target_Joint->setText(QApplication::translate("MainWindow", "Joint(0,1,2,3)", Q_NULLPTR));
-        label_Target_Angle->setText(QApplication::translate("MainWindow", "Angle(deg,mm)", Q_NULLPTR));
+        label_Target_Angle->setText(QApplication::translate("MainWindow", "Value(deg,mm)", Q_NULLPTR));
         groupBox_Circle->setTitle(QApplication::translate("MainWindow", "Move Circle", Q_NULLPTR));
         label_CENTER->setText(QApplication::translate("MainWindow", "CENTER", Q_NULLPTR));
-        label_Center_X->setText(QApplication::translate("MainWindow", "X", Q_NULLPTR));
-        label_Center_Y->setText(QApplication::translate("MainWindow", "Y", Q_NULLPTR));
-        label_Center_Z->setText(QApplication::translate("MainWindow", "Z", Q_NULLPTR));
+        label_Center_X->setText(QApplication::translate("MainWindow", "X(mm)", Q_NULLPTR));
+        label_Center_Y->setText(QApplication::translate("MainWindow", "Y(mm)", Q_NULLPTR));
+        label_Center_Z->setText(QApplication::translate("MainWindow", "Z(mm)", Q_NULLPTR));
         radioButton_Dir_counter->setText(QApplication::translate("MainWindow", "DIR +", Q_NULLPTR));
         radioButton_Dir_noncounter->setText(QApplication::translate("MainWindow", "DIR -", Q_NULLPTR));
         groupBox_Move->setTitle(QApplication::translate("MainWindow", "Move", Q_NULLPTR));
         label_Target->setText(QApplication::translate("MainWindow", "TARGET", Q_NULLPTR));
-        label_Target_X->setText(QApplication::translate("MainWindow", "X", Q_NULLPTR));
-        label_Target_Y->setText(QApplication::translate("MainWindow", "Y", Q_NULLPTR));
-        label_Target_Z->setText(QApplication::translate("MainWindow", "Z", Q_NULLPTR));
-        label_Roll->setText(QApplication::translate("MainWindow", "ROLL", Q_NULLPTR));
+        label_Target_X->setText(QApplication::translate("MainWindow", "X(mm)", Q_NULLPTR));
+        label_Target_Y->setText(QApplication::translate("MainWindow", "Y(mm)", Q_NULLPTR));
+        label_Target_Z->setText(QApplication::translate("MainWindow", "Z(mm)", Q_NULLPTR));
+        label_Roll->setText(QApplication::translate("MainWindow", "ROLL(Degree)", Q_NULLPTR));
         groupBox_Trajectory->setTitle(QApplication::translate("MainWindow", "Trajectory", Q_NULLPTR));
         radioButton_LSPB->setText(QApplication::translate("MainWindow", "LSPB", Q_NULLPTR));
         radioButton_Scurve->setText(QApplication::translate("MainWindow", "S-CURVE", Q_NULLPTR));
@@ -1288,6 +1292,7 @@ public:
         radioButton_ReadPosition->setText(QApplication::translate("MainWindow", "READ POSITION", Q_NULLPTR));
         radioButton_Setting->setText(QApplication::translate("MainWindow", "SETTING", Q_NULLPTR));
         pushButton_Request->setText(QApplication::translate("MainWindow", "REQUEST", Q_NULLPTR));
+        pushButton_Startup->setText(QApplication::translate("MainWindow", "Start up", Q_NULLPTR));
         tabWidget_Operation->setTabText(tabWidget_Operation->indexOf(tab1_Control), QApplication::translate("MainWindow", "Robot Control", Q_NULLPTR));
         label_Chart1->setText(QApplication::translate("MainWindow", "Chart 1", Q_NULLPTR));
         label_Chart2->setText(QApplication::translate("MainWindow", "Chart 2", Q_NULLPTR));

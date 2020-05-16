@@ -217,7 +217,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>D3</string>
+                 <string>D3(mm)</string>
                 </property>
                </widget>
               </item>
@@ -310,7 +310,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>X</string>
+                 <string>X(mm)</string>
                 </property>
                </widget>
               </item>
@@ -349,7 +349,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Y</string>
+                 <string>Y(mm)</string>
                 </property>
                </widget>
               </item>
@@ -388,7 +388,7 @@
                  </size>
                 </property>
                 <property name="text">
-                 <string>Z</string>
+                 <string>Z(mm)</string>
                 </property>
                </widget>
               </item>
@@ -787,7 +787,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Angle(deg,mm)</string>
+                   <string>Value(deg,mm)</string>
                   </property>
                  </widget>
                 </item>
@@ -882,7 +882,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>X</string>
+                   <string>X(mm)</string>
                   </property>
                  </widget>
                 </item>
@@ -921,7 +921,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Y</string>
+                   <string>Y(mm)</string>
                   </property>
                  </widget>
                 </item>
@@ -960,7 +960,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Z</string>
+                   <string>Z(mm)</string>
                   </property>
                  </widget>
                 </item>
@@ -1076,7 +1076,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>X</string>
+                   <string>X(mm)</string>
                   </property>
                  </widget>
                 </item>
@@ -1115,7 +1115,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Y</string>
+                   <string>Y(mm)</string>
                   </property>
                  </widget>
                 </item>
@@ -1154,7 +1154,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>Z</string>
+                   <string>Z(mm)</string>
                   </property>
                  </widget>
                 </item>
@@ -1193,7 +1193,7 @@
                    </size>
                   </property>
                   <property name="text">
-                   <string>ROLL</string>
+                   <string>ROLL(Degree)</string>
                   </property>
                  </widget>
                 </item>
@@ -1595,6 +1595,19 @@
            </property>
            <property name="textVisible">
             <bool>false</bool>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButton_Startup">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>390</y>
+             <width>111</width>
+             <height>23</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Start up</string>
            </property>
           </widget>
          </widget>

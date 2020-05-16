@@ -25,32 +25,32 @@ const char* comboBoxPlot_Y_Name[COMBOBOX_PLOT_NUM] = { "comboBox_Chart1_y",
 
 const char* comboBoxPlot_Var[COMBOBOX_VAR_NUM] = {  "None",
                                                                                                                                   "Time (second)",
-                                                                                                                                  "Pos Var 0 (rad)",
-                                                                                                                                  "Pos Var 1 (rad)",
+                                                                                                                                  "Pos Var 0 (deg)",
+                                                                                                                                  "Pos Var 1 (deg)",
                                                                                                                                   "Pos Var 2 (mm)",
-                                                                                                                                  "Pos Var 3 (rad)",
+                                                                                                                                  "Pos Var 3 (deg)",
                                                                                                                                   "Pos X (mm)",
                                                                                                                                   "Pos Y (mm)",
                                                                                                                                    "Pos Z (mm)",
-                                                                                                                                   "Pos Roll (rad)",
+                                                                                                                                   "Pos Roll (deg)",
                                                                                                                                    "Pos 3D (mm)",
-                                                                                                                                   "Vel Var 0 (rad/s)",
-                                                                                                                                   "Vel Var 1 (rad/s)",
+                                                                                                                                   "Vel Var 0 (deg/s)",
+                                                                                                                                   "Vel Var 1 (deg/s)",
                                                                                                                                     "Vel Var 2 (mm/s)",
-                                                                                                                                    "Vel Var 3 (rad/s)",
+                                                                                                                                    "Vel Var 3 (deg/s)",
                                                                                                                                     "Vel X (mm/s)",
                                                                                                                                     "Vel Y (mm/s)",
                                                                                                                                     "Vel Z (mm/s)",
-                                                                                                                                    "Vel Roll (rad/s)",
+                                                                                                                                    "Vel Roll (deg/s)",
                                                                                                                                     "Vel 3D (mm/s)",
-                                                                                                                                    "Acc Var 0 (rad/s2)",
-                                                                                                                                    "Acc Var 1 (rad/s2)",
+                                                                                                                                    "Acc Var 0 (deg/s2)",
+                                                                                                                                    "Acc Var 1 (deg/s2)",
                                                                                                                                     "Acc Var 2 (mm/s2)",
-                                                                                                                                    "Acc Var 3 (rad/s2)",
+                                                                                                                                    "Acc Var 3 (deg/s2)",
                                                                                                                                     "Acc X (mm/s2)",
                                                                                                                                     "Acc Y (mm/s2)",
                                                                                                                                     "Acc Z (mm/s2)",
-                                                                                                                                    "Acc Roll (rad/s2)",
+                                                                                                                                    "Acc Roll (deg/s2)",
                                                                                                                                     "Acc 3D (mm/s2)"};
 
 
@@ -94,7 +94,7 @@ void MainWindow::plot_initComboBox() {
         if(comboBox != nullptr) {
              comboBox->addItem(comboBoxPlot_Var[0], QVariant(-1));// None
              comboBox->addItem(comboBoxPlot_Var[1], QVariant(0));// Time
-             comboBox->addItem(comboBoxPlot_Var[6], QVariant(5));// X
+             comboBox->addItem(comboBoxPlot_Var[7], QVariant(6));// Y
              m_x_axis.append(comboBox);
         }
     }
@@ -152,6 +152,7 @@ void MainWindow::compute_init() {
     num_sample = 0;
     pre_time_total = 0;
     pre_lenght = 0;
+    time_pre = -0.01;
     // Init size
     vec_time.resize(6000);
     vec_time.clear();
@@ -204,8 +205,13 @@ void MainWindow::compute_newData() {
         }
     } else {
         for (int i = 0; i < 9; ++i) {
-            vel[i]  = (pos[i] - pos_pre[i])/(time  - time_pre);
-            acc[i] = (vel[i] - vel_pre[i])/ (time - time_pre);
+            if ( time - time_pre > 0) {
+                vel[i]  = (pos[i] - pos_pre[i])/(time  - time_pre);
+                acc[i] = (vel[i] - vel_pre[i])/ (time - time_pre);
+            } else {
+                vel[i] = vel_pre[i];
+                acc[i] = acc_pre[i];
+            }
         }
     }
     // Save value;
@@ -255,6 +261,8 @@ void MainWindow::serial_init() {
                         this, &MainWindow::serial_Request_Clicked);
     connect(m_ui->pushButton_Connect, &QPushButton::clicked,
                         this, &MainWindow::serial_Connect_Clicked);
+    connect(m_ui->pushButton_Startup, &QPushButton::clicked,
+                        this, &MainWindow::serial_startUpCommand);
 
     connect(m_robot, &RobotControll::commandSend, this, &MainWindow::serial_logCommand);
     connect(m_robot, &RobotControll::respondArrived, this, &MainWindow::serial_logRespond);
@@ -283,11 +291,11 @@ void MainWindow::serial_initComboBox() {
 
 void MainWindow::serial_openPort() {
     if(m_robot->open(QIODevice::ReadWrite)) {
-        timer_update->stop();
         m_ui->comboBox_Baudrate->setEnabled(false);
         m_ui->comboBox_Comport->setEnabled(false);
         m_ui->pushButton_Connect->setText(tr("DISCONNECT"));
         m_ui->label_connectStatus->setText(tr("Connected"));
+        timer_update->stop();
     } else {
         QMessageBox::critical(this, tr("Error"), m_robot->errorString());
     }
@@ -308,24 +316,22 @@ void MainWindow::serial_closePort() {
 
 void MainWindow::serial_updatePortName() {
     const auto port_info = QSerialPortInfo::availablePorts();
-    int count_port = port_info.count();
-    int count_item = m_ui->comboBox_Comport->count();
-
-    if(count_port < count_item) {
-        for(int i = count_port; i < count_item; i++) {
-            m_ui->comboBox_Comport->removeItem(i);
+    QComboBox *box = m_ui->comboBox_Comport;
+    // Add
+    for (QSerialPortInfo info : port_info) {
+        int count = 0;
+        for (int i = 0; i < box->count() ; ++i) {
+            if (info.portName() != box->itemText(i)) count++;
         }
-        count_item = count_port;
-    } else if(count_port > count_item) {
-        for(int i = count_item; i < count_port; i++) {
-            m_ui->comboBox_Comport->addItem(port_info.at(i).portName());
+        if (count == box->count()) box->addItem(info.portName());//if the name is not exist in comboBox, add it.
+     }
+    // Remove
+    for (int i = 0; i < box->count() ; ++i) {
+        int count = 0;
+        for (QSerialPortInfo info : port_info) {
+             if (info.portName() != box->itemText(i)) count++;
         }
-    }
-    for(int i = 0 ; i < count_item; i ++) {
-        if(port_info.at(i).portName() != m_ui->comboBox_Comport->itemText(i)) {
-            m_ui->comboBox_Comport->removeItem(i);
-            m_ui->comboBox_Comport->addItem(port_info.at(i).portName());
-        }
+        if (count == port_info.count()) box->removeItem(i);//if the name is not exist in portName list, remove it.
     }
 }
 
@@ -359,15 +365,15 @@ void MainWindow::serial_logRespond(QByteArray respond) {
 void MainWindow::serial_displayPosition() {
     double var0, var1, var3, roll;
     if (m_ui->radioButton_Degree->isChecked()) {
-        var0 = m_robot->getVar0()/M_PI*180.0;
-        var1 = m_robot->getVar1()/M_PI*180.0;
-        var3 = m_robot->getVar3()/M_PI*180.0;
-        roll   = m_robot->getRoll()/M_PI*180.0;
-    } else {
         var0 = m_robot->getVar0();
         var1 = m_robot->getVar1();
         var3 = m_robot->getVar3();
         roll   = m_robot->getRoll();
+    } else {
+        var0 = m_robot->getVar0()*M_PI/180.0;
+        var1 = m_robot->getVar1()*M_PI/180.0;
+        var3 = m_robot->getVar3()*M_PI/180.0;
+        roll   = m_robot->getRoll()*M_PI/180.0;
     }
     if (m_robot->isScan()) {
         m_ui->textEdit_Theta1->setText(QString::number(var0));
@@ -535,10 +541,6 @@ void MainWindow::serial_Request_Clicked() {
         joint   = m_ui->textEdit_Target_Joint->toPlainText().toInt(&isInt);
         angle = m_ui->textEdit_Target_Angle->toPlainText().toDouble(&isDouble);
         if(isDouble && isInt) {
-            if(joint != 2) {
-                // Degree --> Radian
-                angle = angle*M_PI/180;
-            }
             if ( m_robot->robotRotateSingleJoint(joint, angle)== false ) {
                 return;
             }
@@ -586,7 +588,8 @@ void MainWindow::serial_Request_Clicked() {
 }
 
 void MainWindow::serial_workStart(QByteArray respond) {
-    compute_newData();
+    time_pre = -0.01;
+    num_sample = 0;
     serial_displayPosition();
     logs_write(respond, QColor(220, 80, 115));
     // Set X range
@@ -595,9 +598,9 @@ void MainWindow::serial_workStart(QByteArray respond) {
             if (figure->var_list.at(i).first == 0)
             {
                 figure->setRangeX(i, 0, ceil(m_robot->getTotalTime()) + pre_time_total);
-            } else if (figure->var_list.at(i).first == 5) {
-                figure->setRangeX(i, 0, 270);
-                figure->setRangeY(i, -270 , 270);
+            } else if (figure->var_list.at(i).first == 6) {
+                figure->setRangeX(i, -360, 360);
+                figure->setRangeY(i, 0 , 360);
             }
         }
     }
@@ -613,21 +616,21 @@ void MainWindow::serial_workEnd(QByteArray respond) {
     serial_displayPosition();
     logs_write(respond, QColor(220, 80, 115));
     num_sample = 0;
+    time_pre = -0.01;
     m_ui->progressBar_Running->setValue(0);
     // Fit all chart
     for( ChartWindow *figure : m_figure) {
         for( int  i = 0;  i < figure->var_list.count(); ++i) {
-            if (figure->var_list.at(i).first == 0)
-            {
                 figure->setRangeFit(i);
-            } else if (figure->var_list.at(i).first == 5) {
-                figure->setRangeX(i, 0, 270);
-                figure->setRangeX(i, -270 , 270);
-            }
         }
     }
     pre_time_total  = vec_time.last();
     pre_lenght = vec_pos[8].last();
+}
+
+void MainWindow::serial_startUpCommand() {
+    m_robot->robotReadStatus();
+    m_robot->robotReadPosition();
 }
 
 /*----UI -----*/

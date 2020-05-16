@@ -27,22 +27,34 @@ ChartWindow::~ChartWindow()
 bool ChartWindow::addChart(int x_var, int y_var, QString x_name, QString y_name ) {
     QChart *chart = new QChart();
     QLineSeries *series = new QLineSeries(chart);
+    series->clear();
     chart->addSeries(series);
     chart->legend()->hide();
     m_line.append(series);
 
     QValueAxis *axisX = new QValueAxis;
-     axisX->setTickCount(11);
      axisX->setLabelFormat("%0.4f");
      axisX->setTitleText(x_name);
-     chart->addAxis(axisX, Qt::AlignBottom);
-     if(!series->attachAxis(axisX)) {
-         qDebug() << "Error attach Axis X \n";
-     }
+     axisX->setRange(-1,1);
 
      QValueAxis *axisY = new QValueAxis;
      axisY->setLabelFormat("%0.4f");
      axisY->setTitleText(y_name);
+     axisY->setRange(-1,1);
+
+     if ( x_var == 0) {
+        axisX->setTickCount(11);
+     } else if (x_var == 6) {
+        axisX->setTickCount(5);
+        axisY->setTickCount(5);
+     }
+
+     // Add X axis
+     chart->addAxis(axisX, Qt::AlignBottom);
+     if(!series->attachAxis(axisX)) {
+         qDebug() << "Error attach Axis X \n";
+     }
+     // Add Y axis
      chart->addAxis(axisY, Qt::AlignLeft);
      if(!series->attachAxis(axisY)) {
          qDebug() << "Error attach Axis Y \n";
@@ -56,7 +68,7 @@ bool ChartWindow::addChart(int x_var, int y_var, QString x_name, QString y_name 
     chartView->setRenderHint(QPainter::Antialiasing);
     num_chart++;
 
-    chartView->chart()->setTheme(QChart::ChartThemeBlueCerulean);
+    //chartView->chart()->setTheme(QChart::ChartThemeBlueCerulean);
 
     return true;
 }
@@ -112,7 +124,7 @@ bool ChartWindow::setRangeFit(int chart_num) {
         double x_min, y_min, x_max, y_max;
         QLineSeries *series = m_line.at(chart_num);
         // Check series is Empty
-        if (series->count() != 0) {
+        if (series->count() > 0) {
             x_min = series->at(0).x();
             y_min = series->at(0).y();
             x_max = series->at(0).x();
@@ -131,25 +143,43 @@ bool ChartWindow::setRangeFit(int chart_num) {
                 if( y_max < series->at(i).y()) {
                     y_max = series->at(i).y();
                 }
+            }   
+            // Ajust
+            double range_x = x_max - x_min;
+            double range_y = y_max - y_min;
+            double x_center = (x_min + x_max) / 2;
+            double y_center = (y_min + y_max) / 2;
+            range_x *= 1.1;// add 10%
+            range_y *= 1.1;
+            if (range_x < 0.0000001) {
+                x_max = x_max + 0.05;
+                x_min = x_min - 0.05;
+                range_x = 0.1;
+            } else {
+                x_min = x_center - range_x/2;
+                x_max = x_center + range_x/2;
             }
+            if (range_y < 0.0000001) {
+                y_max = y_max + 0.05;
+                y_min = y_min - 0.05;
+                range_y = 0.1;
+            } else {
+                y_max = y_center + range_y/2;
+                y_min = y_center - range_y/2;
+            }
+            // If chart XY
+            if (var_list.at(chart_num).first == 6) {
+                if (range_x > range_y) {
+                    y_min = y_center  - range_x / 2;
+                    y_max = y_center + range_x / 2;
+                } else {
+                    x_min = x_center - range_y / 2;
+                    x_max = x_center + range_y / 2;
+                }
+           }
+           setRangeX(chart_num, x_min, x_max);
+           setRangeY(chart_num, y_min, y_max);
         }
-
-        // Ajust
-        double range_x, range_y;
-        range_x = x_max - x_min;
-        range_y = y_max - y_min;
-        if (range_y < 0.00001) {
-            y_max = y_max + 0.05;
-            y_min = y_min - 0.05;
-        } else {
-            y_max = y_max + range_y*0.05;
-            y_min = y_min - range_y*0.05;
-        }
-        x_min = x_min - range_x*0.05;
-        x_max = x_max + range_x*0.05;
-        setRangeX(chart_num, x_min, x_max);
-        setRangeY(chart_num, y_min, y_max);
-
         return true;
     } else {
         return false;

@@ -1,17 +1,15 @@
 #include "robotcontroll.hpp"
 
 // Constructor
-RobotControll::RobotControll(QObject *parent):QSerialPort(parent),
-    timeout(new QTimer(this))
+RobotControll::RobotControll(QObject *parent):QSerialPort(parent)
 {
     connect(this, &QSerialPort::readyRead, this, &RobotControll::readData);
-    connect(timeout, &QTimer::timeout, this, &RobotControll::timeOut);
 }
 
 // Deconstructor
 RobotControll::~RobotControll()
 {
-    delete timeout;
+
 }
 
 // Pack Command
@@ -24,20 +22,7 @@ bool RobotControll::packData(QByteArray &data)
     // packing
     QByteArray temp;
     temp.append(data);
-//    int len = temp.length();
     temp.push_front((char)START_CHAR);
-//    while(len) {
-//        int i = temp.length()-len;
-//        if (temp.at(i) == (char)0x7D || temp.at(i) == (char)0x7E ||
-//                temp.at(i) == (char)0x7F) {
-//            char mem = temp.at(i);
-//            mem ^= (char)0x02;
-//            temp.remove(i, 1);
-//            temp.insert(i, mem);
-//            temp.insert(i, 0x7D);
-//        }
-//        len--;
-//    }
     temp.push_back((char)END_CHAR);
     data.clear();
     data.append(temp);
@@ -62,19 +47,6 @@ bool RobotControll::unPackData(QByteArray &data)
     temp.append(data);
     temp.remove(0, 1);
     temp.remove(temp.length()-1, 1);
-//    int len = temp.length();
-//    while(len) {
-//        int i = temp.length()-len;
-//        if (temp.at(i) == (char)0x7D || temp.at(i) == (char)0x7E ||
-//                temp.at(i) == (char)0x7F) {
-//            char mem = temp.at(i+1);
-//            mem ^= (char)0x02;
-//            temp.remove(i, 2);
-//            temp.insert(i, mem);
-//            len--;
-//        }
-//        len--;
-//    }
     data.clear();
     data.append(temp);
 
@@ -107,23 +79,21 @@ bool RobotControll::writeData(QByteArray &data) {
 // Read Respond from Robot
 void RobotControll::readData() {
     if(this->isOpen()) {
-        QByteArray data = this->readAll();
+        data_read.append(this->readAll());
         // Mutil command in 1 frame
-        while(data.indexOf(END_CHAR) != -1) {
-            QByteArray temp = data.left(data.indexOf(END_CHAR) +1);
-            data.remove(0, data.indexOf(END_CHAR) +1);
+        while(data_read.indexOf(END_CHAR) != -1) {
+            QByteArray temp = data_read.left(data_read.indexOf(END_CHAR) +1);
+            data_read.remove(0, data_read.indexOf(END_CHAR) +1);
             // Unpack Payload
             if ( this->unPackData(temp) == false ) {
                 M_DEBUG("unpack fail");
                 M_DEBUG(qbyteArray2string(temp));
                 continue;
-                //Debug::_delete(temp, data);
             }
             if (!processRespond(temp)) {
                 M_DEBUG("error frame");
                 continue;
             }
-            //M_DEBUG(qbyteArray2string(temp));
         }
     } else {
         M_DEBUG("no device");
@@ -226,14 +196,6 @@ bool   RobotControll::list2position(QByteArrayList list) {
     return true;
 }
 
-// When Robot doesn't respond
-void RobotControll::timeOut()
-{
-    emit commandTimeOut();
-    timeout->stop();
-    istimeout = true;
-}
-
 // Intergrate parameters to Command
 bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para) {
     QByteArray command;
@@ -255,8 +217,6 @@ bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para)
     }
     emit commandSend(command);    // Set Signal
     id_command++;
-//    timeout->start(time);
-//    istimeout = false;
     Debug::_delete(command);
     return true;
 }
@@ -406,7 +366,6 @@ bool RobotControll::robotRotateSingleJoint(int joint, double angle) {
     }
     return true;
 }
-
 
 bool RobotControll::robotOutput(bool output){
     int value = 0;

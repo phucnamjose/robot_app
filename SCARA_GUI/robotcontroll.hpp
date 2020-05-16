@@ -128,7 +128,6 @@ private:
             bool    unPackData(QByteArray &data);
             bool    writeData(QByteArray &data);
             void    readData();
-            void    timeOut();
             bool   processRespond(QByteArray &respond);
             bool   list2position(QByteArrayList list);
             bool   setCommand(robotCommand_t cmd, int time, const QString para = "");
@@ -172,7 +171,7 @@ private:
             double  getValue(robotParam_t param);
 
  private:
-            QTimer     *timeout;
+            QByteArray data_read;
             robotModeInit_t     mode_init = MODE_INIT_QVA;
 
             int              id_command  = 1;
