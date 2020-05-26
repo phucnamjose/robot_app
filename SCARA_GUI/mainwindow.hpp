@@ -62,7 +62,9 @@ private slots:
     void    plot_Plot_Clicked();
     //Compute
     void    compute_init();
-    void    compute_newData();
+    void    compute_newData(double x,double y, double z, double roll,
+                            double var0, double var1, double var2, double var3,
+                            double lenght, double time_run, double time_total);
     void    compute_Delete_Data_Clicked();   // connect delete Data button
     // Serial
     void    serial_updatePortName();    // connect timeout timer check
@@ -73,9 +75,13 @@ private slots:
     void    serial_displayPosition();
     void    serial_Change_Limit_Clicked();    // connect change limit button
     void    serial_Request_Clicked();    // connect request button
-    void    serial_workStart(QByteArray respond);
-    void    serial_workRunning();
-    void    serial_workEnd(QByteArray respond);
+    void    serial_workStart();
+    void    serial_workRunning(double x,double y, double z, double roll,
+                               double var0, double var1, double var2, double var3,
+                               double lenght, double time_run, double time_total);
+    void    serial_workEnd(double x,double y, double z, double roll,
+                                double var0, double var1, double var2, double var3,
+                                double lenght, double time_run, double time_total);
     void    serial_startUpCommand();
     // UI
     void    ui_init();

@@ -113,10 +113,16 @@ class RobotControll : public QSerialPort
 
   signals:
             void    commandTimeOut();
-            void    commandWorkStart(QByteArray repsond);
-            void    commandWorkRunning(QByteArray repsond);
+            void    commandWorkStart(double x,double y, double z, double roll,
+                                                                    double var0, double var1, double var2, double var3,
+                                                                    double lenght, double time_run, double time_total);
+            void    commandWorkRunning(double x,double y, double z, double roll,
+                                                                    double var0, double var1, double var2, double var3,
+                                                                    double lenght, double time_run, double time_total);
             void    commandWorkStop(QByteArray repsond);
-            void    commandWorkDone(QByteArray repsond);
+            void    commandWorkDone(double x,double y, double z, double roll,
+                                                                    double var0, double var1, double var2, double var3,
+                                                                    double lenght, double time_run, double time_total);
             void    commandSend(QByteArray command);
             void    commandAccept(QByteArray repsond);
             void    commandDeny(QByteArray repsond);

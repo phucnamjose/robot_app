@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[30];
-    char stringdata0[478];
+    QByteArrayData data[41];
+    char stringdata0[536];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -39,34 +39,46 @@ QT_MOC_LITERAL(4, 43, 6), // "figure"
 QT_MOC_LITERAL(5, 50, 17), // "plot_Plot_Clicked"
 QT_MOC_LITERAL(6, 68, 12), // "compute_init"
 QT_MOC_LITERAL(7, 81, 15), // "compute_newData"
-QT_MOC_LITERAL(8, 97, 27), // "compute_Delete_Data_Clicked"
-QT_MOC_LITERAL(9, 125, 21), // "serial_updatePortName"
-QT_MOC_LITERAL(10, 147, 20), // "serial_updateSetting"
-QT_MOC_LITERAL(11, 168, 18), // "serial_handleError"
-QT_MOC_LITERAL(12, 187, 28), // "QSerialPort::SerialPortError"
-QT_MOC_LITERAL(13, 216, 5), // "error"
-QT_MOC_LITERAL(14, 222, 17), // "serial_logCommand"
-QT_MOC_LITERAL(15, 240, 7), // "command"
-QT_MOC_LITERAL(16, 248, 17), // "serial_logRespond"
-QT_MOC_LITERAL(17, 266, 7), // "respond"
-QT_MOC_LITERAL(18, 274, 22), // "serial_displayPosition"
-QT_MOC_LITERAL(19, 297, 27), // "serial_Change_Limit_Clicked"
-QT_MOC_LITERAL(20, 325, 22), // "serial_Request_Clicked"
-QT_MOC_LITERAL(21, 348, 16), // "serial_workStart"
-QT_MOC_LITERAL(22, 365, 18), // "serial_workRunning"
-QT_MOC_LITERAL(23, 384, 14), // "serial_workEnd"
-QT_MOC_LITERAL(24, 399, 21), // "serial_startUpCommand"
-QT_MOC_LITERAL(25, 421, 7), // "ui_init"
-QT_MOC_LITERAL(26, 429, 18), // "logs_Clear_Clicked"
-QT_MOC_LITERAL(27, 448, 10), // "closeEvent"
-QT_MOC_LITERAL(28, 459, 12), // "QCloseEvent*"
-QT_MOC_LITERAL(29, 472, 5) // "event"
+QT_MOC_LITERAL(8, 97, 1), // "x"
+QT_MOC_LITERAL(9, 99, 1), // "y"
+QT_MOC_LITERAL(10, 101, 1), // "z"
+QT_MOC_LITERAL(11, 103, 4), // "roll"
+QT_MOC_LITERAL(12, 108, 4), // "var0"
+QT_MOC_LITERAL(13, 113, 4), // "var1"
+QT_MOC_LITERAL(14, 118, 4), // "var2"
+QT_MOC_LITERAL(15, 123, 4), // "var3"
+QT_MOC_LITERAL(16, 128, 6), // "lenght"
+QT_MOC_LITERAL(17, 135, 8), // "time_run"
+QT_MOC_LITERAL(18, 144, 10), // "time_total"
+QT_MOC_LITERAL(19, 155, 27), // "compute_Delete_Data_Clicked"
+QT_MOC_LITERAL(20, 183, 21), // "serial_updatePortName"
+QT_MOC_LITERAL(21, 205, 20), // "serial_updateSetting"
+QT_MOC_LITERAL(22, 226, 18), // "serial_handleError"
+QT_MOC_LITERAL(23, 245, 28), // "QSerialPort::SerialPortError"
+QT_MOC_LITERAL(24, 274, 5), // "error"
+QT_MOC_LITERAL(25, 280, 17), // "serial_logCommand"
+QT_MOC_LITERAL(26, 298, 7), // "command"
+QT_MOC_LITERAL(27, 306, 17), // "serial_logRespond"
+QT_MOC_LITERAL(28, 324, 7), // "respond"
+QT_MOC_LITERAL(29, 332, 22), // "serial_displayPosition"
+QT_MOC_LITERAL(30, 355, 27), // "serial_Change_Limit_Clicked"
+QT_MOC_LITERAL(31, 383, 22), // "serial_Request_Clicked"
+QT_MOC_LITERAL(32, 406, 16), // "serial_workStart"
+QT_MOC_LITERAL(33, 423, 18), // "serial_workRunning"
+QT_MOC_LITERAL(34, 442, 14), // "serial_workEnd"
+QT_MOC_LITERAL(35, 457, 21), // "serial_startUpCommand"
+QT_MOC_LITERAL(36, 479, 7), // "ui_init"
+QT_MOC_LITERAL(37, 487, 18), // "logs_Clear_Clicked"
+QT_MOC_LITERAL(38, 506, 10), // "closeEvent"
+QT_MOC_LITERAL(39, 517, 12), // "QCloseEvent*"
+QT_MOC_LITERAL(40, 530, 5) // "event"
 
     },
     "MainWindow\0plot_figureClosed\0\0"
     "ChartWindow*\0figure\0plot_Plot_Clicked\0"
-    "compute_init\0compute_newData\0"
-    "compute_Delete_Data_Clicked\0"
+    "compute_init\0compute_newData\0x\0y\0z\0"
+    "roll\0var0\0var1\0var2\0var3\0lenght\0"
+    "time_run\0time_total\0compute_Delete_Data_Clicked\0"
     "serial_updatePortName\0serial_updateSetting\0"
     "serial_handleError\0QSerialPort::SerialPortError\0"
     "error\0serial_logCommand\0command\0"
@@ -98,45 +110,45 @@ static const uint qt_meta_data_MainWindow[] = {
        1,    1,  114,    2, 0x08 /* Private */,
        5,    0,  117,    2, 0x08 /* Private */,
        6,    0,  118,    2, 0x08 /* Private */,
-       7,    0,  119,    2, 0x08 /* Private */,
-       8,    0,  120,    2, 0x08 /* Private */,
-       9,    0,  121,    2, 0x08 /* Private */,
-      10,    0,  122,    2, 0x08 /* Private */,
-      11,    1,  123,    2, 0x08 /* Private */,
-      14,    1,  126,    2, 0x08 /* Private */,
-      16,    1,  129,    2, 0x08 /* Private */,
-      18,    0,  132,    2, 0x08 /* Private */,
-      19,    0,  133,    2, 0x08 /* Private */,
-      20,    0,  134,    2, 0x08 /* Private */,
-      21,    1,  135,    2, 0x08 /* Private */,
-      22,    0,  138,    2, 0x08 /* Private */,
-      23,    1,  139,    2, 0x08 /* Private */,
-      24,    0,  142,    2, 0x08 /* Private */,
-      25,    0,  143,    2, 0x08 /* Private */,
-      26,    0,  144,    2, 0x08 /* Private */,
-      27,    1,  145,    2, 0x08 /* Private */,
+       7,   11,  119,    2, 0x08 /* Private */,
+      19,    0,  142,    2, 0x08 /* Private */,
+      20,    0,  143,    2, 0x08 /* Private */,
+      21,    0,  144,    2, 0x08 /* Private */,
+      22,    1,  145,    2, 0x08 /* Private */,
+      25,    1,  148,    2, 0x08 /* Private */,
+      27,    1,  151,    2, 0x08 /* Private */,
+      29,    0,  154,    2, 0x08 /* Private */,
+      30,    0,  155,    2, 0x08 /* Private */,
+      31,    0,  156,    2, 0x08 /* Private */,
+      32,    0,  157,    2, 0x08 /* Private */,
+      33,   11,  158,    2, 0x08 /* Private */,
+      34,   11,  181,    2, 0x08 /* Private */,
+      35,    0,  204,    2, 0x08 /* Private */,
+      36,    0,  205,    2, 0x08 /* Private */,
+      37,    0,  206,    2, 0x08 /* Private */,
+      38,    1,  207,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void, 0x80000000 | 3,    4,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double,    8,    9,   10,   11,   12,   13,   14,   15,   16,   17,   18,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 23,   24,
+    QMetaType::Void, QMetaType::QByteArray,   26,
+    QMetaType::Void, QMetaType::QByteArray,   28,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 12,   13,
-    QMetaType::Void, QMetaType::QByteArray,   15,
-    QMetaType::Void, QMetaType::QByteArray,   17,
+    QMetaType::Void, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double,    8,    9,   10,   11,   12,   13,   14,   15,   16,   17,   18,
+    QMetaType::Void, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double, QMetaType::Double,    8,    9,   10,   11,   12,   13,   14,   15,   16,   17,   18,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QByteArray,   17,
-    QMetaType::Void,
-    QMetaType::Void, QMetaType::QByteArray,   17,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void,
-    QMetaType::Void, 0x80000000 | 28,   29,
+    QMetaType::Void, 0x80000000 | 39,   40,
 
        0        // eod
 };
@@ -150,7 +162,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->plot_figureClosed((*reinterpret_cast< ChartWindow*(*)>(_a[1]))); break;
         case 1: _t->plot_Plot_Clicked(); break;
         case 2: _t->compute_init(); break;
-        case 3: _t->compute_newData(); break;
+        case 3: _t->compute_newData((*reinterpret_cast< double(*)>(_a[1])),(*reinterpret_cast< double(*)>(_a[2])),(*reinterpret_cast< double(*)>(_a[3])),(*reinterpret_cast< double(*)>(_a[4])),(*reinterpret_cast< double(*)>(_a[5])),(*reinterpret_cast< double(*)>(_a[6])),(*reinterpret_cast< double(*)>(_a[7])),(*reinterpret_cast< double(*)>(_a[8])),(*reinterpret_cast< double(*)>(_a[9])),(*reinterpret_cast< double(*)>(_a[10])),(*reinterpret_cast< double(*)>(_a[11]))); break;
         case 4: _t->compute_Delete_Data_Clicked(); break;
         case 5: _t->serial_updatePortName(); break;
         case 6: _t->serial_updateSetting(); break;
@@ -160,9 +172,9 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 10: _t->serial_displayPosition(); break;
         case 11: _t->serial_Change_Limit_Clicked(); break;
         case 12: _t->serial_Request_Clicked(); break;
-        case 13: _t->serial_workStart((*reinterpret_cast< QByteArray(*)>(_a[1]))); break;
-        case 14: _t->serial_workRunning(); break;
-        case 15: _t->serial_workEnd((*reinterpret_cast< QByteArray(*)>(_a[1]))); break;
+        case 13: _t->serial_workStart(); break;
+        case 14: _t->serial_workRunning((*reinterpret_cast< double(*)>(_a[1])),(*reinterpret_cast< double(*)>(_a[2])),(*reinterpret_cast< double(*)>(_a[3])),(*reinterpret_cast< double(*)>(_a[4])),(*reinterpret_cast< double(*)>(_a[5])),(*reinterpret_cast< double(*)>(_a[6])),(*reinterpret_cast< double(*)>(_a[7])),(*reinterpret_cast< double(*)>(_a[8])),(*reinterpret_cast< double(*)>(_a[9])),(*reinterpret_cast< double(*)>(_a[10])),(*reinterpret_cast< double(*)>(_a[11]))); break;
+        case 15: _t->serial_workEnd((*reinterpret_cast< double(*)>(_a[1])),(*reinterpret_cast< double(*)>(_a[2])),(*reinterpret_cast< double(*)>(_a[3])),(*reinterpret_cast< double(*)>(_a[4])),(*reinterpret_cast< double(*)>(_a[5])),(*reinterpret_cast< double(*)>(_a[6])),(*reinterpret_cast< double(*)>(_a[7])),(*reinterpret_cast< double(*)>(_a[8])),(*reinterpret_cast< double(*)>(_a[9])),(*reinterpret_cast< double(*)>(_a[10])),(*reinterpret_cast< double(*)>(_a[11]))); break;
         case 16: _t->serial_startUpCommand(); break;
         case 17: _t->ui_init(); break;
         case 18: _t->logs_Clear_Clicked(); break;

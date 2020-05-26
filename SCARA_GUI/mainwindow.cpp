@@ -185,19 +185,21 @@ void MainWindow::compute_init() {
                         this, &MainWindow::compute_Delete_Data_Clicked);
 }
 
-void MainWindow::compute_newData() {
+void MainWindow::compute_newData(double x,double y, double z, double roll,
+                                 double var0, double var1, double var2, double var3,
+                                 double lenght, double time_run, double time_total) {
     double time, total_time, pos[9], vel[9], acc[9];
-    total_time = m_robot->getTotalTime();
-    time = m_robot->getTimeRun();
-    pos[0]  = m_robot->getVar0();
-    pos[1]  = m_robot->getVar1();
-    pos[2]  = m_robot->getVar2();
-    pos[3]  = m_robot->getVar3();
-    pos[4]  = m_robot->getX();
-    pos[5]  = m_robot->getY();
-    pos[6]  = m_robot->getZ();
-    pos[7]  = m_robot->getRoll();
-    pos[8] = m_robot->getLenght() + pre_lenght;
+    total_time = time_total;
+    time = time_run;
+    pos[0]  = var0;
+    pos[1]   = var1;
+    pos[2]  = var2;
+    pos[3]  = var3;
+    pos[4]  = x;
+    pos[5]  = y;
+    pos[6]  = z;
+    pos[7]  = roll;
+    pos[8] = lenght + pre_lenght;
     if( 0 == num_sample) {
         for (int i = 0; i < 9; ++i) {
             vel[i] = 0;
@@ -587,11 +589,11 @@ void MainWindow::serial_Request_Clicked() {
     }
 }
 
-void MainWindow::serial_workStart(QByteArray respond) {
+void MainWindow::serial_workStart() {
     time_pre = -0.01;
     num_sample = 0;
     serial_displayPosition();
-    logs_write(respond, QColor(220, 80, 115));
+   // logs_write(respond, QColor(220, 80, 115));
     // Set X range
     for( ChartWindow *figure : m_figure) {
         for( int  i = 0;  i < figure->var_list.count(); ++i) {
@@ -606,15 +608,19 @@ void MainWindow::serial_workStart(QByteArray respond) {
     }
 }
 
-void MainWindow::serial_workRunning() {
-    compute_newData();
+void MainWindow::serial_workRunning(double x,double y, double z, double roll,
+                                    double var0, double var1, double var2, double var3,
+                                    double lenght, double time_run, double time_total) {
+    compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
     serial_displayPosition();
 }
 
-void MainWindow::serial_workEnd(QByteArray respond) {
-    compute_newData();
+void MainWindow::serial_workEnd(double x,double y, double z, double roll,
+                                double var0, double var1, double var2, double var3,
+                                double lenght, double time_run, double time_total) {
+    compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
     serial_displayPosition();
-    logs_write(respond, QColor(220, 80, 115));
+   // logs_write(respond, QColor(220, 80, 115));
     num_sample = 0;
     time_pre = -0.01;
     m_ui->progressBar_Running->setValue(0);

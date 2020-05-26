@@ -133,19 +133,19 @@ bool   RobotControll::processRespond(QByteArray &repsond) {
         } else if (respond_code == ROBOTRESPOND[RPD_START]) {
             list2position(list);
             // Send Signal
-            emit commandWorkStart(repsond);
+            emit commandWorkStart(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
 
         // RUNN
         } else if (respond_code == ROBOTRESPOND[RPD_RUNNING]) {
             list2position(list);
             // Send Signal
-            emit commandWorkRunning(repsond);
+            emit commandWorkRunning(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
 
         // DONE
         } else if (respond_code == ROBOTRESPOND[RPD_DONE]) {
             list2position(list);
             // Send Signal
-            emit commandWorkDone(repsond);
+            emit commandWorkDone(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
 
         // STOP
         } else if (respond_code == ROBOTRESPOND[RPD_STOP]) {
