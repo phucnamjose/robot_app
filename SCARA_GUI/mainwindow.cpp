@@ -365,26 +365,36 @@ void MainWindow::serial_logRespond(QByteArray respond) {
 }
 
 void MainWindow::serial_displayPosition() {
-    double var0, var1, var3, roll;
-    if (m_ui->radioButton_Degree->isChecked()) {
+    if (m_robot->isScan()) {
+        double var0, var1, var3, roll;
         var0 = m_robot->getVar0();
         var1 = m_robot->getVar1();
         var3 = m_robot->getVar3();
         roll   = m_robot->getRoll();
-    } else {
-        var0 = m_robot->getVar0()*M_PI/180.0;
-        var1 = m_robot->getVar1()*M_PI/180.0;
-        var3 = m_robot->getVar3()*M_PI/180.0;
-        roll   = m_robot->getRoll()*M_PI/180.0;
-    }
-    if (m_robot->isScan()) {
+        double var2, x, y ,z;
+        var2 = m_robot->getVar2();
+        x = m_robot->getX();
+        y = m_robot->getY();
+        z = m_robot->getZ();
+        // Display in slider
+        m_ui->horizontalSlider_var0->setValue(round((var0 - (-90))/(90 - (- 90))*1000));
+        m_ui->horizontalSlider_var1->setValue(round((var1 - (-67.5))/(67.5 - (- 67.5))*1000));
+        m_ui->horizontalSlider_var2->setValue(round(var2/100*1000));
+        m_ui->horizontalSlider_var3->setValue(round((var3 - (-180))/(180 - (- 180))*1000));
+        // Display in Text edit
+        if (!m_ui->radioButton_Degree->isChecked()) {
+            var0 = m_robot->getVar0()*M_PI/180.0;
+            var1 = m_robot->getVar1()*M_PI/180.0;
+            var3 = m_robot->getVar3()*M_PI/180.0;
+            roll   = m_robot->getRoll()*M_PI/180.0;
+        }
         m_ui->textEdit_Theta1->setText(QString::number(var0));
         m_ui->textEdit_Theta2->setText(QString::number(var1));
-        m_ui->textEdit_D3->setText(QString::number(m_robot->getVar2()));
+        m_ui->textEdit_D3->setText(QString::number(var2));
         m_ui->textEdit_Theta4->setText(QString::number(var3));
-        m_ui->textEdit_X->setText(QString::number(m_robot->getX()));
-        m_ui->textEdit_Y->setText(QString::number(m_robot->getY()));
-        m_ui->textEdit_Z->setText(QString::number(m_robot->getZ()));
+        m_ui->textEdit_X->setText(QString::number(x));
+        m_ui->textEdit_Y->setText(QString::number(y));
+        m_ui->textEdit_Z->setText(QString::number(z));
         m_ui->textEdit_Roll->setText(QString::number(roll));
     }
 }
@@ -637,6 +647,8 @@ void MainWindow::serial_workEnd(double x,double y, double z, double roll,
 void MainWindow::serial_startUpCommand() {
     m_robot->robotReadStatus();
     m_robot->robotReadPosition();
+    m_robot->setVelocity(0.5);
+    m_robot->setAccelerate(0.5);
 }
 
 /*----UI -----*/
