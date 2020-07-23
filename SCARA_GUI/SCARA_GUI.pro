@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui charts serialport
+QT       += core gui charts serialport gamepad
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,6 +18,7 @@ SOURCES += main.cpp\
     chart.cpp \
     chartview.cpp \
     chartwindow.cpp \
+    joysticks.cpp \
         mainwindow.cpp \
     robotcontroll.cpp \
     debug.cpp
@@ -27,6 +28,7 @@ HEADERS  += \
     chartview.hpp \
     chartwindow.hpp \
     debug.hpp \
+    joysticks.hpp \
     mainwindow.hpp \
     robotcontroll.hpp
 

@@ -6,6 +6,7 @@
 #define CHECKBOX_NUM                                         (2)
 #define COMBOBOX_PLOT_NUM                         (4)
 #define COMBOBOX_VAR_NUM                            (29)
+#define BUTTON_KEYBOARD_NUM                      (17)
 
 const char* comboBoxSerial_Name[COMBOBOX_SERIAL_NUM] = {"comboBox_Comport",
                                                                                                                                         "comboBox_Baudrate"};
@@ -53,6 +54,23 @@ const char* comboBoxPlot_Var[COMBOBOX_VAR_NUM] = {  "None",
                                                                                                                                     "Acc Roll (deg/s2)",
                                                                                                                                     "Acc 3D (mm/s2)"};
 
+const char* pushButton_KeyBoard[BUTTON_KEYBOARD_NUM] = {  "pushButton_X_inc",
+                                                                                                                                         "pushButton_X_dec",
+                                                                                                                                         "pushButton_Y_inc",
+                                                                                                                                         "pushButton_Y_dec",
+                                                                                                                                         "pushButton_Z_inc",
+                                                                                                                                         "pushButton_Z_dec",
+                                                                                                                                         "pushButton_Roll_inc",
+                                                                                                                                         "pushButton_Roll_dec",
+                                                                                                                                         "pushButton_Var0_inc",
+                                                                                                                                         "pushButton_Var0_dec",
+                                                                                                                                         "pushButton_Var1_inc",
+                                                                                                                                         "pushButton_Var1_dec",
+                                                                                                                                         "pushButton_Var2_inc",
+                                                                                                                                         "pushButton_Var2_dec",
+                                                                                                                                         "pushButton_Var3_inc",
+                                                                                                                                         "pushButton_Var3_dec"};
+
 
 MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     m_ui(new Ui::MainWindow),
@@ -63,6 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     serial_init();
     ui_init();
     compute_init();
+    joystick_init();
     qDebug() << "Program START \n";
 }
 
@@ -73,7 +92,7 @@ MainWindow::~MainWindow()
     }
     delete m_ui;
     delete m_robot;
-    delete timer_update;
+    delete timer_update_comport;
 }
 
     /*-------------------------- DECLARE -----------------------------*/
@@ -83,7 +102,11 @@ void MainWindow::plot_init() {
     num_chartwindow = 1;
     plot_initComboBox();
      // SIGNAL & SLOT
-    connect(m_ui->pushButton_Plot, &QPushButton::clicked, this, &MainWindow::plot_Plot_Clicked);
+    connect(m_ui->pushButton_Plot, &QPushButton::clicked, this, &MainWindow::on_pushButton_Plot_Clicked);
+
+    timer_update_figure = new QTimer(this);
+    connect(timer_update_figure, &QTimer::timeout, this, &MainWindow:: plot_timerFigure_handle);
+    timer_update_figure->start(500);
 }
 
 void MainWindow::plot_initComboBox() {
@@ -114,37 +137,23 @@ void MainWindow::plot_initComboBox() {
     }
 }
 
-void MainWindow::plot_Plot_Clicked()
-{
-    // create figure
-    ChartWindow *figure = new ChartWindow(this);
-    figure->setWindowTitle(QString(tr("Figure ")) + QString::number(num_chartwindow));
-    num_chartwindow++;
-    // set figure
-    for (int i = 0; i < m_x_axis.count(); ++i) {
-        QComboBox *comboBox_X = m_x_axis.at(i);
-        QComboBox *comboBox_Y = m_y_axis.at(i);
-        if (comboBox_X->currentText() != QString("None") && comboBox_Y->currentText() != QString("None")) {
-                QString x_name, y_name;
-                int x_var, y_var;
-                x_name = comboBox_X->currentText();
-                y_name = comboBox_Y->currentText();
-                x_var = comboBox_X->currentData().toInt();
-                y_var = comboBox_Y->currentData().toInt();
-                figure->addChart(x_var, y_var, x_name, y_name);
-                // add points
-                figure->addPoint(i, *vec_list.at(x_var), *vec_list.at(y_var));
-                figure->setRangeFit(i);
-        }
-    }
-    figure->show();
-    m_figure.append(figure);
-    // signals & slot
-    connect(figure, &ChartWindow::figureClosed, this, &MainWindow::plot_figureClosed);
-}
-
 void MainWindow::plot_figureClosed(ChartWindow *figure) {
     m_figure.removeOne(figure);
+}
+
+void  MainWindow::plot_timerFigure_handle() {
+    // Plot new point
+    if(num_sample_plot < vec_time.size() && vec_time.size() > 0) {
+        for( ChartWindow *figure : m_figure) {
+            for( int  i = 0;  i < figure->var_list.count(); ++i) {
+               // figure->addPoint(i, (*vec_list.at(figure->var_list.at(i).first)->mid(num_sample_plot)),
+                   //                                    (*vec_list.at(figure->var_list.at(i).second)->mid(num_sample_plot)));
+                figure->addPoint(i, vec_list.at(figure->var_list.at(i).first)->mid(num_sample_plot),
+                                vec_list.at(figure->var_list.at(i).second)->mid(num_sample_plot) );
+            }
+        }
+        num_sample_plot = vec_time.size();
+    }
 }
 
 /*---- Computing Data -----*/
@@ -153,6 +162,7 @@ void MainWindow::compute_init() {
     pre_time_total = 0;
     pre_lenght = 0;
     time_pre = -0.01;
+    collect_data = false;
     // Init size
     vec_time.resize(6000);
     vec_time.clear();
@@ -180,9 +190,13 @@ void MainWindow::compute_init() {
     for (int i = 0; i < 9; ++i) {
         vec_list.append(&vec_acc [i]);
     }
+
+    timer_update_display = new QTimer(this);
     // Signal & Slot
+    connect(timer_update_display, &QTimer::timeout, this, &MainWindow::serial_displayPosition);
     connect(m_ui->pushButton_Delete_Data, &QPushButton::clicked,
-                        this, &MainWindow::compute_Delete_Data_Clicked);
+                        this, &MainWindow::on_pushButton_Delete_Data_Clicked);
+    timer_update_display->start(300);
 }
 
 void MainWindow::compute_newData(double x,double y, double z, double roll,
@@ -217,20 +231,15 @@ void MainWindow::compute_newData(double x,double y, double z, double roll,
         }
     }
     // Save value;
-    vec_time.append(time +  pre_time_total);
-    for (int i = 0; i < 9; ++i) {
-        vec_pos[i].append(pos[i]);
-        vec_vel[i].append(vel[i]);
-        vec_acc[i].append(acc[i]);
-    }
-    // Plot new point
-    for( ChartWindow *figure : m_figure) {
-        for( int  i = 0;  i < figure->var_list.count(); ++i) {
-            double x_value = (*vec_list.at(figure->var_list.at(i).first)).last();
-            double y_value = (*vec_list.at(figure->var_list.at(i).second)).last();
-            figure->addPoint(i, x_value, y_value);
+    if(collect_data) {
+         vec_time.append(time +  pre_time_total);
+        for (int i = 0; i < 9; ++i) {
+            vec_pos[i].append(pos[i]);
+            vec_vel[i].append(vel[i]);
+            vec_acc[i].append(acc[i]);
         }
     }
+
     // Update previos value
     time_pre = time;
     for (int i = 0; i < 9; ++i) {
@@ -239,16 +248,6 @@ void MainWindow::compute_newData(double x,double y, double z, double roll,
         acc_pre[i] = acc[i];
     }
     num_sample++;
-    m_ui->progressBar_Running->setValue(ceil(time/total_time*1000));
-}
-
-void MainWindow::compute_Delete_Data_Clicked() {
-    for (int i = 0; i < 28; ++i) {
-        (*(vec_list.at(i))).clear();
-    }
-    pre_time_total = 0;
-    pre_lenght = 0;
-    QMessageBox::information(this, tr("Inform"), tr("Data vector is deleted"));
 }
 
 /*---- Serial -----*/
@@ -258,13 +257,16 @@ void MainWindow::serial_init() {
     serial_initComboBox();
     // signals & slot
     connect(m_ui->pushButton_Change_Limit, &QPushButton::clicked,
-                        this, &MainWindow::serial_Change_Limit_Clicked);
+                        this, &MainWindow::on_pushButton_Change_Limit_Clicked);
     connect(m_ui->pushButton_Request, &QPushButton::clicked,
-                        this, &MainWindow::serial_Request_Clicked);
+                        this, &MainWindow::on_pushButton_Request_Clicked);
     connect(m_ui->pushButton_Connect, &QPushButton::clicked,
-                        this, &MainWindow::serial_Connect_Clicked);
+                        this, &MainWindow::on_pushButton_Connect_Clicked);
     connect(m_ui->pushButton_Startup, &QPushButton::clicked,
-                        this, &MainWindow::serial_startUpCommand);
+                        this, &MainWindow::on_pushButton_startUpCommand);
+    connect(m_ui->pushButton_Output, &QPushButton::clicked,
+                        this, &MainWindow::on_pushButton_Output_Clicked);
+
 
     connect(m_robot, &RobotControll::commandSend, this, &MainWindow::serial_logCommand);
     connect(m_robot, &RobotControll::respondArrived, this, &MainWindow::serial_logRespond);
@@ -274,9 +276,9 @@ void MainWindow::serial_init() {
     connect(m_robot, &RobotControll::commandWorkRunning, this, &MainWindow::serial_workRunning);
     connect(m_robot, &RobotControll::commandWorkDone, this, &MainWindow::serial_workEnd);
     // create timer to update what comboBox PortName change
-    timer_update = new QTimer(this);
-    connect(timer_update, &QTimer::timeout, this, &MainWindow::serial_updatePortName);
-    timer_update->start(1000);
+    timer_update_comport = new QTimer(this);
+    connect(timer_update_comport, &QTimer::timeout, this, &MainWindow::serial_updatePortName);
+    timer_update_comport->start(1000);
 }
 
 void MainWindow::serial_initComboBox() {
@@ -297,7 +299,7 @@ void MainWindow::serial_openPort() {
         m_ui->comboBox_Comport->setEnabled(false);
         m_ui->pushButton_Connect->setText(tr("DISCONNECT"));
         m_ui->label_connectStatus->setText(tr("Connected"));
-        timer_update->stop();
+        timer_update_comport->stop();
     } else {
         QMessageBox::critical(this, tr("Error"), m_robot->errorString());
     }
@@ -310,7 +312,7 @@ void MainWindow::serial_closePort() {
         m_ui->comboBox_Comport->setEnabled(true);
         m_ui->pushButton_Connect->setText("CONNECT");
         m_ui->label_connectStatus->setText(tr("Disconnected"));
-        timer_update->start(1000);
+        timer_update_comport->start(1000);
     } else {
         QMessageBox::critical(this, tr("Error"), m_robot->errorString());
     }
@@ -357,11 +359,11 @@ void MainWindow::serial_handleError(QSerialPort::SerialPortError error)
 }
 
 void MainWindow::serial_logCommand(QByteArray command) {
-    logs_write(tr(command), QColor(0,0,140));
+    logsWrite(tr(command), QColor(0,0,140));
 }
 
 void MainWindow::serial_logRespond(QByteArray respond) {
-     logs_write(tr(respond), QColor(230,0,0));
+     logsWrite(tr(respond), QColor(230,0,0));
 }
 
 void MainWindow::serial_displayPosition() {
@@ -376,11 +378,14 @@ void MainWindow::serial_displayPosition() {
         x = m_robot->getX();
         y = m_robot->getY();
         z = m_robot->getZ();
+        double time, time_total;
+        time = m_robot->getTimeRun();
+        time_total = m_robot->getTotalTime();
         // Display in slider
-        m_ui->horizontalSlider_var0->setValue(round((var0 - (-90))/(90 - (- 90))*1000));
-        m_ui->horizontalSlider_var1->setValue(round((var1 - (-67.5))/(67.5 - (- 67.5))*1000));
-        m_ui->horizontalSlider_var2->setValue(round(var2/100*1000));
-        m_ui->horizontalSlider_var3->setValue(round((var3 - (-180))/(180 - (- 180))*1000));
+        m_ui->horizontalSlider_var0->setValue(round((var0 - (-85))/(85 - (- 85))*1000));
+        m_ui->horizontalSlider_var1->setValue(round((var1 - (-135))/(135 - (- 135))*1000));
+        m_ui->horizontalSlider_var2->setValue(round(var2/90*1000));
+        m_ui->horizontalSlider_var3->setValue(round((var3 - (-170))/(170 - (- 170))*1000));
         // Display in Text edit
         if (!m_ui->radioButton_Degree->isChecked()) {
             var0 = m_robot->getVar0()*M_PI/180.0;
@@ -396,76 +401,212 @@ void MainWindow::serial_displayPosition() {
         m_ui->textEdit_Y->setText(QString::number(y));
         m_ui->textEdit_Z->setText(QString::number(z));
         m_ui->textEdit_Roll->setText(QString::number(roll));
+         // Display in Progress Bar
+        m_ui->progressBar_Running->setValue(ceil(time/time_total*1000));
     }
 }
 
-void MainWindow::serial_Connect_Clicked()
-{
-    if(m_ui->pushButton_Connect->text() == "CONNECT") {
-        serial_openPort();
-    } else {
-        serial_closePort();
-    }
-}
-
-void MainWindow::serial_Change_Limit_Clicked() {
-    bool isDouble1, isDouble2, isDouble3;
-    double  factor_v, factor_a, time;
-    factor_v       = m_ui->textEdit_Velocity_Limit->toPlainText().toDouble(&isDouble1);
-    // Velocity
-    if (isDouble1) {
-        if ( (factor_v <= 0.0) || (factor_v > 1.0)) {
-            QMessageBox::critical(this, tr("Error"), tr("Factor velocity must be in range : 0 -  1"));
-            return;
+void MainWindow::serial_workStart() {
+    time_pre = -0.01;
+    num_sample = 0;
+    serial_displayPosition();
+   // logsWrite(respond, QColor(220, 80, 115));
+    // Set X range
+    for( ChartWindow *figure : m_figure) {
+        for( int  i = 0;  i < figure->var_list.count(); ++i) {
+            if (figure->var_list.at(i).first == 0)
+            {
+                figure->setRangeX(i, 0, ceil(m_robot->getTotalTime()) + pre_time_total);
+            } else if (figure->var_list.at(i).first == 6) {
+                figure->setRangeX(i, -360, 360);
+                figure->setRangeY(i, 0 , 360);
+            }
         }
-    } else {
-        QMessageBox::critical(this, tr("Error"), tr("Velocity parameter must is double"));
+    }
+}
+
+void MainWindow::serial_workRunning(double x,double y, double z, double roll,
+                                    double var0, double var1, double var2, double var3,
+                                    double lenght, double time_run, double time_total) {
+    compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
+    serial_displayPosition();
+}
+
+void MainWindow::serial_workEnd(double x,double y, double z, double roll,
+                                double var0, double var1, double var2, double var3,
+                                double lenght, double time_run, double time_total) {
+    compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
+    serial_displayPosition();
+   // logsWrite(respond, QColor(220, 80, 115));
+    num_sample = 0;
+    time_pre = -0.01;
+    m_ui->progressBar_Running->setValue(0);
+//    // Fit all chart
+//    for( ChartWindow *figure : m_figure) {
+//        for( int  i = 0;  i < figure->var_list.count(); ++i) {
+//                figure->setRangeFit(i);
+//        }
+//    }
+    if (vec_time.size() > 0) {
+        pre_time_total  = vec_time.last();
+        pre_lenght = vec_pos[8].last();
+    }
+}
+
+/*----UI -----*/
+void MainWindow:: ui_init() {
+    timer_keyboard = new QTimer(this);
+    connect(m_ui->pushButton_LogsClear, &QPushButton::clicked,
+                        this, &MainWindow::on_pushButton_Logs_Clear_Clicked);
+
+    connect(timer_keyboard, &QTimer::timeout, this, &MainWindow::keyboardTimerHandle);
+
+    connect(m_ui->pushButton_X_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_X_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Y_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Y_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Z_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Z_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Roll_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Roll_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var0_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var0_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var1_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var1_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var2_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var2_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var3_inc, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+    connect(m_ui->pushButton_Var3_dec, &QPushButton::pressed,
+                        this, &MainWindow::keyboardPressHandle);
+
+    connect(m_ui->pushButton_X_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_X_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Y_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Y_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Z_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Z_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Roll_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Roll_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var0_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var0_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var1_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var1_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var2_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var2_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var3_inc, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+    connect(m_ui->pushButton_Var3_dec, &QPushButton::released,
+                        this, &MainWindow::keyboardReleaseHandle);
+}
+
+void MainWindow::logsWrite(QString message, QColor c) {
+    if( message.isEmpty() || message.isNull() ) {
+        M_DEBUG("log write error");
         return;
     }
-    // Mode Init
-    if (m_ui->radioButton_QVA->isChecked()) {
-        factor_a = m_ui->textEdit_Accelerate_Limit->toPlainText().toDouble(&isDouble2);
-        if(isDouble2) {
-            // Accelerate
-            if ( (factor_a > 0.0) && (factor_a <= 1.0)) {
-                m_robot->setModeInite(RobotControll::MODE_INIT_QVA);
-                m_robot->setVelocity(factor_v);
-                m_robot->setAccelerate(factor_a);
-                // Logs
-                logs_write(tr("Changed: Mode QTA veloc %1, accel %2").arg(factor_v).arg(factor_a),
-                                        QColor(0,140,0));
-            } else {
-                QMessageBox::critical(this, tr("Error"), tr("Factor accelerate must be in range : 0 -  1"));
-                return;
-            }
-        } else {
-            QMessageBox::critical(this, tr("Error"), tr("Accelarate parameter must is double"));
-            return;
-        }
-
-    } else {
-        time = m_ui->textEdit_Time_Total->toPlainText().toDouble(&isDouble3);
-        if (isDouble3) {
-            // Time
-            if ( (time > 0.0) && (time < 20)) {
-                m_robot->setModeInite(RobotControll::MODE_INIT_QVT);
-                m_robot->setVelocity(factor_v);
-                m_robot->setTimeTotalLimit(time);
-                // Logs
-                logs_write(tr("Changed: Mode QVT veloc %1, total time %2s").arg(factor_v).arg(time),
-                                        QColor(0,140,0));
-            } else {
-                QMessageBox::critical(this, tr("Error"), tr("Time over range"));
-                return;
-            }
-        } else {
-            QMessageBox::critical(this, tr("Error"), tr("Time parameter must is double"));
-            return;
-        }
-    }
+    m_ui->textEdit_Logs->setTextColor(c);
+    m_ui->textEdit_Logs->insertPlainText(message);
+    m_ui->textEdit_Logs->insertPlainText("\n");
+    m_ui->textEdit_Logs->ensureCursorVisible(); // Scroll to bottom automaticly
 }
 
-void MainWindow::serial_Request_Clicked() {
+void MainWindow::on_pushButton_Logs_Clear_Clicked() {
+    m_ui->textEdit_Logs->clear();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "Confirmation",
+                                                                    "Close window. Sure?\n",
+                                                                    QMessageBox::No | QMessageBox::Yes);
+        if (resBtn != QMessageBox::Yes) {
+            event->ignore();
+        } else {
+            event->accept();
+        }
+}
+
+void MainWindow::on_pushButton_startUpCommand() {
+    // Check
+    if (!(m_robot->isOpen()))  {
+        QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
+        return;
+    }
+    m_robot->robotResetId();
+    m_robot->robotReadStatus();
+    m_robot->robotReadPosition();
+    m_robot->setVelocity(0.5);
+    m_robot->setAccelerate(0.5);
+  }
+
+void MainWindow::on_pushButton_Stop_clicked()
+{
+    // Check
+    if (!(m_robot->isOpen()))  {
+        QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
+        return;
+    }
+    m_robot->robotStop();
+}
+
+void MainWindow::on_pushButton_Plot_Clicked() {
+    // create figure
+    ChartWindow *figure = new ChartWindow(this);
+    figure->setWindowTitle(QString(tr("Figure ")) + QString::number(num_chartwindow));
+    num_chartwindow++;
+    // set figure
+    for (int i = 0; i < m_x_axis.count(); ++i) {
+        QComboBox *comboBox_X = m_x_axis.at(i);
+        QComboBox *comboBox_Y = m_y_axis.at(i);
+        if (comboBox_X->currentText() != QString("None") && comboBox_Y->currentText() != QString("None")) {
+                QString x_name, y_name;
+                int x_var, y_var;
+                x_name = comboBox_X->currentText();
+                y_name = comboBox_Y->currentText();
+                x_var = comboBox_X->currentData().toInt();
+                y_var = comboBox_Y->currentData().toInt();
+                figure->addChart(x_var, y_var, x_name, y_name);
+                // add points
+                figure->addPoint(i, *vec_list.at(x_var), *vec_list.at(y_var));
+                figure->setRangeFit(i);
+                num_sample_plot = vec_time.size();
+        }
+    }
+    figure->show();
+    m_figure.append(figure);
+    // signals & slot
+    connect(figure, &ChartWindow::figureClosed, this, &MainWindow::plot_figureClosed);
+}
+
+void MainWindow::on_pushButton_Request_Clicked() {
     // Check
     if (!(m_robot->isOpen()))  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
@@ -495,7 +636,7 @@ void MainWindow::serial_Request_Clicked() {
         z = m_ui->textEdit_Target_Z->toPlainText().toDouble(&isDouble3);
         roll =  m_ui->textEdit_Target_Roll->toPlainText().toDouble(&isDouble4);
         if(isDouble1 && isDouble2 && isDouble3 && isDouble4) {
-            if( m_robot->robotMoveLine(x, y, z, roll)== false ) {
+            if( m_robot->robotMoveLine(x, y, z, roll)) {
                 return;
             }
         } else {
@@ -521,7 +662,7 @@ void MainWindow::serial_Request_Clicked() {
         }
         if (isDouble1 && isDouble2 && isDouble3 && isDouble4
                 && isDouble5 && isDouble6 && isDouble7) {
-            if ( m_robot->robotMoveCircle(x, y, z, roll, center_x, center_y, center_z, dir)== false ) {
+            if ( m_robot->robotMoveCircle(x, y, z, roll, center_x, center_y, center_z, dir) ) {
                 return;
             }
         } else {
@@ -538,7 +679,7 @@ void MainWindow::serial_Request_Clicked() {
         roll   = m_ui->textEdit_Target_Roll->toPlainText().toDouble(&isDouble4);
 
         if (isDouble1 && isDouble2 && isDouble3 && isDouble4) {
-            if ( m_robot->robotMoveJoint(x, y, z, roll)== false ) {
+            if ( m_robot->robotMoveJoint(x, y, z, roll)) {
                 return;
             }
         } else {
@@ -553,7 +694,7 @@ void MainWindow::serial_Request_Clicked() {
         joint   = m_ui->textEdit_Target_Joint->toPlainText().toInt(&isInt);
         angle = m_ui->textEdit_Target_Angle->toPlainText().toDouble(&isDouble);
         if(isDouble && isInt) {
-            if ( m_robot->robotRotateSingleJoint(joint, angle)== false ) {
+            if ( m_robot->robotRotateSingleJoint(joint, angle) ) {
                 return;
             }
         } else {
@@ -562,19 +703,19 @@ void MainWindow::serial_Request_Clicked() {
         }
     // OUTP
     } else if(m_ui->radioButton_Output->isChecked()) {
-        int output = 0;
-        if (m_ui->checkBox_Output->isChecked()) { output = 1;}
-        if ( m_robot->robotOutput(output)== false ) {
+        bool output = false;
+        if (m_ui->checkBox_Output->isChecked()) { output = true;}
+        if ( m_robot->robotOutput(output)) {
                 return;
             }
     // READ
     } else if(m_ui->radioButton_ReadStatus->isChecked()) {
-        if ( m_robot->robotReadStatus() == false ) {
+        if ( m_robot->robotReadStatus()) {
             return;
         }
     // POSI
     } else if(m_ui->radioButton_ReadPosition->isChecked()) {
-        if ( m_robot->robotReadPosition() == false ) {
+        if ( m_robot->robotReadPosition()) {
             return;
         }
     // SETT
@@ -593,94 +734,267 @@ void MainWindow::serial_Request_Clicked() {
            trajec = RobotControll::TRAJECTORY_SCURVE;
         }
 
-        if ( m_robot->robotSetting(coor, trajec) == false ) {
+        if ( m_robot->robotSetting(coor, trajec) ) {
             return;
         }
     }
 }
 
-void MainWindow::serial_workStart() {
-    time_pre = -0.01;
-    num_sample = 0;
-    serial_displayPosition();
-   // logs_write(respond, QColor(220, 80, 115));
-    // Set X range
-    for( ChartWindow *figure : m_figure) {
-        for( int  i = 0;  i < figure->var_list.count(); ++i) {
-            if (figure->var_list.at(i).first == 0)
-            {
-                figure->setRangeX(i, 0, ceil(m_robot->getTotalTime()) + pre_time_total);
-            } else if (figure->var_list.at(i).first == 6) {
-                figure->setRangeX(i, -360, 360);
-                figure->setRangeY(i, 0 , 360);
-            }
-        }
-    }
-}
-
-void MainWindow::serial_workRunning(double x,double y, double z, double roll,
-                                    double var0, double var1, double var2, double var3,
-                                    double lenght, double time_run, double time_total) {
-    compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
-    serial_displayPosition();
-}
-
-void MainWindow::serial_workEnd(double x,double y, double z, double roll,
-                                double var0, double var1, double var2, double var3,
-                                double lenght, double time_run, double time_total) {
-    compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
-    serial_displayPosition();
-   // logs_write(respond, QColor(220, 80, 115));
-    num_sample = 0;
-    time_pre = -0.01;
-    m_ui->progressBar_Running->setValue(0);
-    // Fit all chart
-    for( ChartWindow *figure : m_figure) {
-        for( int  i = 0;  i < figure->var_list.count(); ++i) {
-                figure->setRangeFit(i);
-        }
-    }
-    pre_time_total  = vec_time.last();
-    pre_lenght = vec_pos[8].last();
-}
-
-void MainWindow::serial_startUpCommand() {
-    m_robot->robotReadStatus();
-    m_robot->robotReadPosition();
-    m_robot->setVelocity(0.5);
-    m_robot->setAccelerate(0.5);
-}
-
-/*----UI -----*/
-void MainWindow:: ui_init() {
-    connect(m_ui->pushButton_LogsClear, &QPushButton::clicked,
-                        this, &MainWindow::logs_Clear_Clicked);
-}
-
-void MainWindow::logs_write(QString message, QColor c) {
-    if( message.isEmpty() || message.isNull() ) {
-        M_DEBUG("log write error");
+void MainWindow::on_pushButton_Output_Clicked() {
+    // Check
+    if (!(m_robot->isOpen()))  {
+        QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }
-    m_ui->textEdit_Logs->setTextColor(c);
-    m_ui->textEdit_Logs->insertPlainText(message);
-    m_ui->textEdit_Logs->insertPlainText("\n");
-    m_ui->textEdit_Logs->ensureCursorVisible(); // Scroll to bottom automaticly
+    m_robot->robotOutputToggle();
 }
 
-void MainWindow::logs_Clear_Clicked() {
-    m_ui->textEdit_Logs->clear();
-}
-
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-    QMessageBox::StandardButton resBtn = QMessageBox::question( this, "Confirmation",
-                                                                    "Close window. Sure?\n",
-                                                                    QMessageBox::No | QMessageBox::Yes);
-        if (resBtn != QMessageBox::Yes) {
-            event->ignore();
-        } else {
-            event->accept();
+void MainWindow::on_pushButton_Change_Limit_Clicked() {
+    bool isDouble1, isDouble2, isDouble3;
+    double  factor_v, factor_a, time;
+    factor_v       = m_ui->textEdit_Velocity_Limit->toPlainText().toDouble(&isDouble1);
+    // Velocity
+    if (isDouble1) {
+        if ( (factor_v <= 0.0) || (factor_v > 1.0)) {
+            QMessageBox::critical(this, tr("Error"), tr("Factor velocity must be in range : 0 -  1"));
+            return;
         }
+    } else {
+        QMessageBox::critical(this, tr("Error"), tr("Velocity parameter must is double"));
+        return;
+    }
+    // Mode Init
+    if (m_ui->radioButton_QVA->isChecked()) {
+        factor_a = m_ui->textEdit_Accelerate_Limit->toPlainText().toDouble(&isDouble2);
+        if(isDouble2) {
+            // Accelerate
+            if ( (factor_a > 0.0) && (factor_a <= 1.0)) {
+                m_robot->setModeInite(RobotControll::MODE_INIT_QVA);
+                m_robot->setVelocity(factor_v);
+                m_robot->setAccelerate(factor_a);
+                // Logs
+                logsWrite(tr("Changed: Mode QTA veloc %1, accel %2").arg(factor_v).arg(factor_a),
+                                        QColor(0,140,0));
+            } else {
+                QMessageBox::critical(this, tr("Error"), tr("Factor accelerate must be in range : 0 -  1"));
+                return;
+            }
+        } else {
+            QMessageBox::critical(this, tr("Error"), tr("Accelarate parameter must is double"));
+            return;
+        }
+
+    } else {
+        time = m_ui->textEdit_Time_Total->toPlainText().toDouble(&isDouble3);
+        if (isDouble3) {
+            // Time
+            if ( (time > 0.0) && (time < 20)) {
+                m_robot->setModeInite(RobotControll::MODE_INIT_QVT);
+                m_robot->setVelocity(factor_v);
+                m_robot->setTimeTotalLimit(time);
+                // Logs
+                logsWrite(tr("Changed: Mode QVT veloc %1, total time %2s").arg(factor_v).arg(time),
+                                        QColor(0,140,0));
+            } else {
+                QMessageBox::critical(this, tr("Error"), tr("Time over range"));
+                return;
+            }
+        } else {
+            QMessageBox::critical(this, tr("Error"), tr("Time parameter must is double"));
+            return;
+        }
+    }
 }
 
+void MainWindow::on_pushButton_Connect_Clicked() {
+    if(m_ui->pushButton_Connect->text() == "CONNECT") {
+        serial_openPort();
+    } else {
+        serial_closePort();
+    }
+}
+
+void MainWindow::on_pushButton_Delete_Data_Clicked() {
+    for (int i = 0; i < 28; ++i) {
+        (*(vec_list.at(i))).clear();
+    }
+    pre_time_total = 0;
+    pre_lenght = 0;
+    num_sample_plot = 0;
+    QMessageBox::information(this, tr("Inform"), tr("Data vector is deleted"));
+}
+
+void MainWindow::on_checkBox_Collect_Data_toggled(bool checked)
+{
+    collect_data = checked;
+}
+
+void MainWindow::keyboardPressHandle() {
+    QPushButton *button =  (QPushButton *)sender();
+    for(int i = 0; i < BUTTON_KEYBOARD_NUM; i++) {
+        if (pushButton_KeyBoard[i] ==  button->objectName()) {
+            key_robot =static_cast<RobotControll::robotKeyBoard_t>(i);
+            break;
+        }
+    }
+    timer_keyboard->start(500);
+}
+
+void MainWindow::keyboardReleaseHandle() {
+    timer_keyboard->stop();
+}
+
+void MainWindow::keyboardTimerHandle() {
+    m_robot->robotKeyBoard(key_robot);
+}
+
+bool MainWindow:: joystick_init() {
+    QGamepadManager *ptrManager = QGamepadManager::instance();
+
+    /******************************
+     * Workaround code so gamepads are detected
+     *****************************/
+    QWindow *wnd = new QWindow();
+    wnd->show();
+    delete wnd;
+    qApp->processEvents();
+    /********************************
+     * End workaround code
+     ********************************/
+    QList<int> lstDevices = ptrManager->connectedGamepads();
+    if(!lstDevices.isEmpty()) {
+            joystick = new Joysticks(lstDevices[0], this);
+            connect(joystick, &Joysticks::buttonUpChanged,       this,
+                              [this](bool value) {this->joystick_event(value, Joysticks::FUNC_X_V0_DEC);});
+            connect(joystick, &Joysticks::buttonDownChanged, this,
+                              [this](bool value) {this->joystick_event(value, Joysticks::FUNC_X_V0_INC);});
+            connect(joystick, &Joysticks::buttonLeftChanged,     this,
+                              [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Y_V1_DEC);});
+            connect(joystick, &Joysticks::buttonRightChanged,  this,
+                              [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Y_V1_DEC);});
+            connect(joystick, &Joysticks::buttonYChanged,          this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Z_V2_INC);});
+            connect(joystick, &Joysticks::buttonAChanged,          this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Z_V2_DEC);});
+            connect(joystick, &Joysticks::buttonXChanged,          this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_ROLL_V3_DEC);});
+            connect(joystick, &Joysticks::buttonBChanged,          this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_ROLL_V3_INC);});
+            connect(joystick, &Joysticks::buttonL1Changed,         this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_OUTPUT);});
+            connect(joystick, &Joysticks::buttonL2Changed,        this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_CHANGE_SPEED);});
+            connect(joystick, &Joysticks::buttonR1Changed,        this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_CHANGE_SPACE);});
+//            connect(joystick, &Joysticks::buttonR2Changed,        this,
+//                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC);});
+//            connect(joystick, &Joysticks::buttonSelectChanged, this,
+//                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_X_V0_DEC);});
+//            connect(joystick, &Joysticks::buttonStartChanged,     this,
+//                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_X_V0_DEC);});
+    return true;
+    }
+    return false;
+}
+
+void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t func) {
+    if (pressed) {
+        switch (func) {
+        case Joysticks::FUNC_X_V0_INC:
+            if(is_cartesian) {
+                key_robot = RobotControll::KEY_X_INC;
+            } else {
+                key_robot = RobotControll::KEY_VAR0_INC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_X_V0_DEC:
+            if(is_cartesian) {
+                key_robot = RobotControll::KEY_X_DEC;
+            } else {
+                 key_robot = RobotControll::KEY_VAR0_DEC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_Y_V1_INC:
+            if(is_cartesian) {
+                 key_robot = RobotControll::KEY_Y_INC;
+            } else {
+                 key_robot = RobotControll::KEY_VAR1_INC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_Y_V1_DEC:
+            if(is_cartesian) {
+                 key_robot = RobotControll::KEY_Y_DEC;
+            } else {
+                 key_robot = RobotControll::KEY_VAR1_DEC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_Z_V2_INC:
+            if(is_cartesian) {
+                 key_robot = RobotControll::KEY_Z_INC;
+            } else {
+                 key_robot = RobotControll::KEY_VAR2_INC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_Z_V2_DEC:
+            if(is_cartesian) {
+                key_robot = RobotControll::KEY_Z_DEC;
+            } else {
+                 key_robot = RobotControll::KEY_VAR2_DEC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_ROLL_V3_INC:
+            if(is_cartesian) {
+                 key_robot = RobotControll::KEY_ROLL_INC;
+            } else {
+                 key_robot = RobotControll::KEY_VAR3_INC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_ROLL_V3_DEC:
+            if(is_cartesian) {
+                 key_robot = RobotControll::KEY_ROLL_DEC;
+            } else {
+                 key_robot = RobotControll::KEY_VAR3_DEC;
+            }
+            timer_keyboard->start(500);
+            break;
+        case Joysticks::FUNC_OUTPUT:
+            m_robot->robotOutputToggle();
+            break;
+        case Joysticks::FUNC_CHANGE_SPACE:
+            is_cartesian = !is_cartesian;
+            if(is_cartesian) {
+                m_ui->label_Space->setText("SPACE: WORK");
+            } else {
+                m_ui->label_Space->setText("SPACE: JOINT");
+            }
+            break;
+        case Joysticks::FUNC_CHANGE_SPEED:
+
+            break;
+        default:
+            break;
+        }
+    } else {
+        switch (func) {
+        case Joysticks::FUNC_X_V0_INC:
+        case Joysticks::FUNC_X_V0_DEC:
+        case Joysticks::FUNC_Y_V1_INC:
+        case Joysticks::FUNC_Y_V1_DEC:
+        case Joysticks::FUNC_Z_V2_INC:
+        case Joysticks::FUNC_Z_V2_DEC:
+        case Joysticks::FUNC_ROLL_V3_INC:
+        case Joysticks::FUNC_ROLL_V3_DEC:
+            timer_keyboard->stop();
+            break;
+        default:
+            break;
+        }
+    }
+}

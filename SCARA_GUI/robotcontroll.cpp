@@ -277,7 +277,7 @@ bool RobotControll::robotScanLimit() {
 }
 
 bool RobotControll::robotMoveHome() {
-    if(this->setCommand(this->CMD_HOME, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_HOME, 1000, tr("%1 %2").arg(factor_velocity).arg(factor_accelerate)) == false ) {
         return false;
     }
    return true;
@@ -369,12 +369,19 @@ bool RobotControll::robotRotateSingleJoint(int joint, double angle) {
 
 bool RobotControll::robotOutput(bool output){
     int value = 0;
-    if(output){ value = 1;}
+    if(output){
+        value = 1;
+    }
     if(this->setCommand(this->CMD_OUTPUT, 1000, tr("%1")
                               .arg(value)) == false ){
         return false;
     }
+    output_robot = output;
     return true;
+}
+
+bool  RobotControll::robotOutputToggle() {
+    return robotOutput(!output_robot);
 }
 
 bool RobotControll::robotReadStatus(){
@@ -391,7 +398,7 @@ bool RobotControll::robotReadPosition(){
     return true;
 }
 
-bool  RobotControll::robotSetting(robotCoordinate_t coordinate, robotTrajectory_t   trajectory) {
+bool RobotControll::robotSetting(robotCoordinate_t coordinate, robotTrajectory_t   trajectory) {
     if(this->setCommand(this->CMD_SETTING, 1000, tr("%1 %2")
                                               .arg(int(coordinate))
                                                .arg(int(trajectory))) == false ){
@@ -400,7 +407,101 @@ bool  RobotControll::robotSetting(robotCoordinate_t coordinate, robotTrajectory_
     return true;
 }
 
-bool   RobotControll::isScan() {
+bool  RobotControll::robotMethodChange(robotMethod_t method) {
+    if(this->setCommand(this->CMD_METHOD_CHANGE, 1000, tr("%1")
+                                               .arg(int(method))) == false ){
+        return false;
+    }
+    return true;
+}
+
+bool RobotControll:: robotJobNew() {
+    if(this->setCommand(this->CMD_JOB_NEW, 1000, tr("")) == false ) {
+        return false;
+    }
+    return true;
+}
+
+bool RobotControll::robotJobDelete() {
+    if(this->setCommand(this->CMD_JOB_DELETE, 1000, tr("")) == false ) {
+        return false;
+    }
+    return true;
+}
+
+bool RobotControll::robotJobPushMoveLine(double x, double y, double z, double roll) {
+    double temp;
+    if (mode_init == MODE_INIT_QVA) {
+        temp = factor_accelerate;
+    } else {
+        temp = time_total_limit;
+    }
+    if(this->setCommand(this->CMD_JOB_PUSH_MOVE_LINE, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
+                              .arg(x)
+                              .arg(y)
+                              .arg(z)
+                              .arg(roll)
+                              .arg(factor_velocity)
+                              .arg(int(mode_init))
+                              .arg(temp)) == false ){
+        return false;
+    }
+    return true;
+}
+
+bool RobotControll:: robotJobPushMoveJoint(double x, double y, double z, double roll) {
+    double temp;
+    if (mode_init == MODE_INIT_QVA) {
+        temp = factor_accelerate;
+    } else {
+        temp = time_total_limit;
+    }
+    if(this->setCommand(this->CMD_JOB_PUSH_MOVE_JOINT, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
+                                              .arg(x)
+                                              .arg(y)
+                                              .arg(z)
+                                              .arg(roll)
+                                              .arg(factor_velocity)
+                                              .arg(int(mode_init))
+                                              .arg(temp)) == false ){
+        return false;
+    }
+    return true;
+}
+
+bool RobotControll::robotJobPushOutput(bool output) {
+    int value = 0;
+    if(output){ value = 1;}
+    if(this->setCommand(this->CMD_JOB_PUSH_OUTPUT, 1000, tr("%1")
+                              .arg(value)) == false ){
+        return false;
+    }
+    return true;
+}
+
+bool RobotControll:: robotJobTest() {
+    if(this->setCommand(this->CMD_JOB_TEST, 1000, tr("")) == false ) {
+        return false;
+    }
+    return true;
+}
+
+bool RobotControll:: robotJobRun() {
+    if(this->setCommand(this->CMD_JOB_RUN, 1000, tr("")) == false ) {
+        return false;
+    }
+    return true;
+}
+
+bool  RobotControll::robotKeyBoard(robotKeyBoard_t key) {
+    if(this->setCommand(this->CMD_KEYBOARD, 1000, tr("%1").arg(int(key))) == false ) {
+        return false;
+    }
+   return true;
+}
+
+
+bool  RobotControll::isScan() {
     return scan;
 }
 
