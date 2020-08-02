@@ -500,6 +500,26 @@ bool  RobotControll::robotKeyBoard(robotKeyBoard_t key) {
    return true;
 }
 
+// speed : 1 --> 10
+bool  RobotControll::robotKeySpeedInc() {
+    if ( key_speed > 1) {
+        key_speed--;
+    }
+    if(this->setCommand(this->CMD_KEY_SPEED, 1000, tr("%1").arg(int(key_speed))) == false ) {
+        return false;
+    }
+    return true;
+}
+
+bool  RobotControll::robotKeySpeedDec() {
+    if ( key_speed < 5) {
+        key_speed++;
+    }
+    if(this->setCommand(this->CMD_KEY_SPEED, 1000, tr("%1").arg(int(key_speed))) == false ) {
+        return false;
+    }
+    return true;
+}
 
 bool  RobotControll::isScan() {
     return scan;

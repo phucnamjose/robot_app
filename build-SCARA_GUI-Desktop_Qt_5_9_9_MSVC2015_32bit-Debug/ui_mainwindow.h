@@ -128,6 +128,12 @@ public:
     QRadioButton *radioButton_QVA;
     QRadioButton *radioButton_QVT;
     QPushButton *pushButton_Change_Limit;
+    QGroupBox *groupBox_2;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout_28;
+    QRadioButton *radioButton_Auto;
+    QRadioButton *radioButton_SemiAuto;
+    QRadioButton *radioButton_Manual;
     QWidget *layoutWidget5;
     QVBoxLayout *verticalLayout_command;
     QRadioButton *radioButton_Stop;
@@ -141,6 +147,7 @@ public:
     QRadioButton *radioButton_ReadStatus;
     QRadioButton *radioButton_ReadPosition;
     QRadioButton *radioButton_Setting;
+    QRadioButton *radioButton_Method;
     QPushButton *pushButton_Request;
     QSpacerItem *verticalSpacer_2;
     QPushButton *pushButton_Startup;
@@ -154,11 +161,11 @@ public:
     QPushButton *pushButton_Delete_Data;
     QPushButton *pushButton_Log_Data;
     QGroupBox *groupBox;
-    QWidget *widget;
+    QWidget *layoutWidget7;
     QVBoxLayout *verticalLayout_27;
     QLabel *label_Space;
     QLabel *label_Speed;
-    QWidget *widget1;
+    QWidget *layoutWidget8;
     QVBoxLayout *verticalLayout_26;
     QVBoxLayout *verticalLayout_16;
     QHBoxLayout *horizontalLayout_3;
@@ -229,11 +236,11 @@ public:
     QVBoxLayout *verticalLayout_22;
     QLabel *label_Roll_2;
     QTextEdit *textEdit_Roll;
-    QWidget *layoutWidget7;
+    QWidget *layoutWidget9;
     QVBoxLayout *verticalLayout_25;
     QRadioButton *radioButton_Radian;
     QRadioButton *radioButton_Degree;
-    QWidget *layoutWidget8;
+    QWidget *layoutWidget10;
     QVBoxLayout *verticalLayout_slider;
     QHBoxLayout *horizontalLayout_11;
     QLabel *label;
@@ -256,7 +263,7 @@ public:
     QSlider *horizontalSlider_var3;
     QLabel *label_var3_max;
     QWidget *tab2_Plot;
-    QWidget *layoutWidget9;
+    QWidget *layoutWidget11;
     QVBoxLayout *verticalLayout_Plot;
     QHBoxLayout *horizontalLayout_Chart1;
     QLabel *label_Chart1;
@@ -828,6 +835,33 @@ public:
 
         horizontalLayout_Center_4->addWidget(pushButton_Change_Limit);
 
+        groupBox_2 = new QGroupBox(groupBox_Input);
+        groupBox_2->setObjectName(QStringLiteral("groupBox_2"));
+        groupBox_2->setGeometry(QRect(210, 240, 181, 71));
+        widget = new QWidget(groupBox_2);
+        widget->setObjectName(QStringLiteral("widget"));
+        widget->setGeometry(QRect(60, 10, 81, 61));
+        verticalLayout_28 = new QVBoxLayout(widget);
+        verticalLayout_28->setSpacing(6);
+        verticalLayout_28->setContentsMargins(11, 11, 11, 11);
+        verticalLayout_28->setObjectName(QStringLiteral("verticalLayout_28"));
+        verticalLayout_28->setContentsMargins(0, 0, 0, 0);
+        radioButton_Auto = new QRadioButton(widget);
+        radioButton_Auto->setObjectName(QStringLiteral("radioButton_Auto"));
+
+        verticalLayout_28->addWidget(radioButton_Auto);
+
+        radioButton_SemiAuto = new QRadioButton(widget);
+        radioButton_SemiAuto->setObjectName(QStringLiteral("radioButton_SemiAuto"));
+        radioButton_SemiAuto->setChecked(true);
+
+        verticalLayout_28->addWidget(radioButton_SemiAuto);
+
+        radioButton_Manual = new QRadioButton(widget);
+        radioButton_Manual->setObjectName(QStringLiteral("radioButton_Manual"));
+
+        verticalLayout_28->addWidget(radioButton_Manual);
+
         layoutWidget5 = new QWidget(groupBox_Command);
         layoutWidget5->setObjectName(QStringLiteral("layoutWidget5"));
         layoutWidget5->setGeometry(QRect(10, 30, 112, 381));
@@ -903,6 +937,12 @@ public:
 
         verticalLayout_command->addWidget(radioButton_Setting);
 
+        radioButton_Method = new QRadioButton(layoutWidget5);
+        radioButton_Method->setObjectName(QStringLiteral("radioButton_Method"));
+        radioButton_Method->setFont(font);
+
+        verticalLayout_command->addWidget(radioButton_Method);
+
         pushButton_Request = new QPushButton(layoutWidget5);
         pushButton_Request->setObjectName(QStringLiteral("pushButton_Request"));
         pushButton_Request->setFont(font);
@@ -970,15 +1010,15 @@ public:
         groupBox = new QGroupBox(groupBox_Teach);
         groupBox->setObjectName(QStringLiteral("groupBox"));
         groupBox->setGeometry(QRect(190, 20, 141, 131));
-        widget = new QWidget(groupBox);
-        widget->setObjectName(QStringLiteral("widget"));
-        widget->setGeometry(QRect(10, 30, 124, 91));
-        verticalLayout_27 = new QVBoxLayout(widget);
+        layoutWidget7 = new QWidget(groupBox);
+        layoutWidget7->setObjectName(QStringLiteral("layoutWidget7"));
+        layoutWidget7->setGeometry(QRect(10, 30, 124, 91));
+        verticalLayout_27 = new QVBoxLayout(layoutWidget7);
         verticalLayout_27->setSpacing(6);
         verticalLayout_27->setContentsMargins(11, 11, 11, 11);
         verticalLayout_27->setObjectName(QStringLiteral("verticalLayout_27"));
         verticalLayout_27->setContentsMargins(0, 0, 0, 0);
-        label_Space = new QLabel(widget);
+        label_Space = new QLabel(layoutWidget7);
         label_Space->setObjectName(QStringLiteral("label_Space"));
         QFont font2;
         font2.setPointSize(10);
@@ -988,16 +1028,16 @@ public:
 
         verticalLayout_27->addWidget(label_Space);
 
-        label_Speed = new QLabel(widget);
+        label_Speed = new QLabel(layoutWidget7);
         label_Speed->setObjectName(QStringLiteral("label_Speed"));
         label_Speed->setFont(font2);
 
         verticalLayout_27->addWidget(label_Speed);
 
-        widget1 = new QWidget(groupBox_Teach);
-        widget1->setObjectName(QStringLiteral("widget1"));
-        widget1->setGeometry(QRect(20, 40, 162, 283));
-        verticalLayout_26 = new QVBoxLayout(widget1);
+        layoutWidget8 = new QWidget(groupBox_Teach);
+        layoutWidget8->setObjectName(QStringLiteral("layoutWidget8"));
+        layoutWidget8->setGeometry(QRect(20, 40, 162, 283));
+        verticalLayout_26 = new QVBoxLayout(layoutWidget8);
         verticalLayout_26->setSpacing(6);
         verticalLayout_26->setContentsMargins(11, 11, 11, 11);
         verticalLayout_26->setObjectName(QStringLiteral("verticalLayout_26"));
@@ -1008,7 +1048,7 @@ public:
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setSpacing(6);
         horizontalLayout_3->setObjectName(QStringLiteral("horizontalLayout_3"));
-        pushButton_X_inc = new QPushButton(widget1);
+        pushButton_X_inc = new QPushButton(layoutWidget8);
         pushButton_X_inc->setObjectName(QStringLiteral("pushButton_X_inc"));
         pushButton_X_inc->setFont(font);
         pushButton_X_inc->setStyleSheet(QLatin1String("pushButton_X_inc {\n"
@@ -1026,7 +1066,7 @@ public:
 
         horizontalLayout_3->addWidget(pushButton_X_inc);
 
-        pushButton_X_dec = new QPushButton(widget1);
+        pushButton_X_dec = new QPushButton(layoutWidget8);
         pushButton_X_dec->setObjectName(QStringLiteral("pushButton_X_dec"));
         pushButton_X_dec->setFont(font);
 
@@ -1038,13 +1078,13 @@ public:
         horizontalLayout_4 = new QHBoxLayout();
         horizontalLayout_4->setSpacing(6);
         horizontalLayout_4->setObjectName(QStringLiteral("horizontalLayout_4"));
-        pushButton_Y_inc = new QPushButton(widget1);
+        pushButton_Y_inc = new QPushButton(layoutWidget8);
         pushButton_Y_inc->setObjectName(QStringLiteral("pushButton_Y_inc"));
         pushButton_Y_inc->setFont(font);
 
         horizontalLayout_4->addWidget(pushButton_Y_inc);
 
-        pushButton_Y_dec = new QPushButton(widget1);
+        pushButton_Y_dec = new QPushButton(layoutWidget8);
         pushButton_Y_dec->setObjectName(QStringLiteral("pushButton_Y_dec"));
         pushButton_Y_dec->setFont(font);
 
@@ -1056,13 +1096,13 @@ public:
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setSpacing(6);
         horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
-        pushButton_Z_inc = new QPushButton(widget1);
+        pushButton_Z_inc = new QPushButton(layoutWidget8);
         pushButton_Z_inc->setObjectName(QStringLiteral("pushButton_Z_inc"));
         pushButton_Z_inc->setFont(font);
 
         horizontalLayout_5->addWidget(pushButton_Z_inc);
 
-        pushButton_Z_dec = new QPushButton(widget1);
+        pushButton_Z_dec = new QPushButton(layoutWidget8);
         pushButton_Z_dec->setObjectName(QStringLiteral("pushButton_Z_dec"));
         pushButton_Z_dec->setFont(font);
 
@@ -1074,13 +1114,13 @@ public:
         horizontalLayout_6 = new QHBoxLayout();
         horizontalLayout_6->setSpacing(6);
         horizontalLayout_6->setObjectName(QStringLiteral("horizontalLayout_6"));
-        pushButton_Roll_inc = new QPushButton(widget1);
+        pushButton_Roll_inc = new QPushButton(layoutWidget8);
         pushButton_Roll_inc->setObjectName(QStringLiteral("pushButton_Roll_inc"));
         pushButton_Roll_inc->setFont(font);
 
         horizontalLayout_6->addWidget(pushButton_Roll_inc);
 
-        pushButton_Roll_dec = new QPushButton(widget1);
+        pushButton_Roll_dec = new QPushButton(layoutWidget8);
         pushButton_Roll_dec->setObjectName(QStringLiteral("pushButton_Roll_dec"));
         pushButton_Roll_dec->setFont(font);
 
@@ -1098,13 +1138,13 @@ public:
         horizontalLayout_7 = new QHBoxLayout();
         horizontalLayout_7->setSpacing(6);
         horizontalLayout_7->setObjectName(QStringLiteral("horizontalLayout_7"));
-        pushButton_Var0_inc = new QPushButton(widget1);
+        pushButton_Var0_inc = new QPushButton(layoutWidget8);
         pushButton_Var0_inc->setObjectName(QStringLiteral("pushButton_Var0_inc"));
         pushButton_Var0_inc->setFont(font);
 
         horizontalLayout_7->addWidget(pushButton_Var0_inc);
 
-        pushButton_Var0_dec = new QPushButton(widget1);
+        pushButton_Var0_dec = new QPushButton(layoutWidget8);
         pushButton_Var0_dec->setObjectName(QStringLiteral("pushButton_Var0_dec"));
         pushButton_Var0_dec->setFont(font);
 
@@ -1116,13 +1156,13 @@ public:
         horizontalLayout_8 = new QHBoxLayout();
         horizontalLayout_8->setSpacing(6);
         horizontalLayout_8->setObjectName(QStringLiteral("horizontalLayout_8"));
-        pushButton_Var1_inc = new QPushButton(widget1);
+        pushButton_Var1_inc = new QPushButton(layoutWidget8);
         pushButton_Var1_inc->setObjectName(QStringLiteral("pushButton_Var1_inc"));
         pushButton_Var1_inc->setFont(font);
 
         horizontalLayout_8->addWidget(pushButton_Var1_inc);
 
-        pushButton_Var1_dec = new QPushButton(widget1);
+        pushButton_Var1_dec = new QPushButton(layoutWidget8);
         pushButton_Var1_dec->setObjectName(QStringLiteral("pushButton_Var1_dec"));
         pushButton_Var1_dec->setFont(font);
 
@@ -1134,13 +1174,13 @@ public:
         horizontalLayout_9 = new QHBoxLayout();
         horizontalLayout_9->setSpacing(6);
         horizontalLayout_9->setObjectName(QStringLiteral("horizontalLayout_9"));
-        pushButton_Var2_inc = new QPushButton(widget1);
+        pushButton_Var2_inc = new QPushButton(layoutWidget8);
         pushButton_Var2_inc->setObjectName(QStringLiteral("pushButton_Var2_inc"));
         pushButton_Var2_inc->setFont(font);
 
         horizontalLayout_9->addWidget(pushButton_Var2_inc);
 
-        pushButton_Var2_dec = new QPushButton(widget1);
+        pushButton_Var2_dec = new QPushButton(layoutWidget8);
         pushButton_Var2_dec->setObjectName(QStringLiteral("pushButton_Var2_dec"));
         pushButton_Var2_dec->setFont(font);
 
@@ -1152,13 +1192,13 @@ public:
         horizontalLayout_10 = new QHBoxLayout();
         horizontalLayout_10->setSpacing(6);
         horizontalLayout_10->setObjectName(QStringLiteral("horizontalLayout_10"));
-        pushButton_Var3_inc = new QPushButton(widget1);
+        pushButton_Var3_inc = new QPushButton(layoutWidget8);
         pushButton_Var3_inc->setObjectName(QStringLiteral("pushButton_Var3_inc"));
         pushButton_Var3_inc->setFont(font);
 
         horizontalLayout_10->addWidget(pushButton_Var3_inc);
 
-        pushButton_Var3_dec = new QPushButton(widget1);
+        pushButton_Var3_dec = new QPushButton(layoutWidget8);
         pushButton_Var3_dec->setObjectName(QStringLiteral("pushButton_Var3_dec"));
         pushButton_Var3_dec->setFont(font);
 
@@ -1457,30 +1497,30 @@ public:
 
         horizontalLayout_XYZ_target_2->addLayout(verticalLayout_22);
 
-        layoutWidget7 = new QWidget(groupBox_Information);
-        layoutWidget7->setObjectName(QStringLiteral("layoutWidget7"));
-        layoutWidget7->setGeometry(QRect(330, 20, 44, 42));
-        verticalLayout_25 = new QVBoxLayout(layoutWidget7);
+        layoutWidget9 = new QWidget(groupBox_Information);
+        layoutWidget9->setObjectName(QStringLiteral("layoutWidget9"));
+        layoutWidget9->setGeometry(QRect(330, 20, 44, 42));
+        verticalLayout_25 = new QVBoxLayout(layoutWidget9);
         verticalLayout_25->setSpacing(6);
         verticalLayout_25->setContentsMargins(11, 11, 11, 11);
         verticalLayout_25->setObjectName(QStringLiteral("verticalLayout_25"));
         verticalLayout_25->setContentsMargins(0, 0, 0, 0);
-        radioButton_Radian = new QRadioButton(layoutWidget7);
+        radioButton_Radian = new QRadioButton(layoutWidget9);
         radioButton_Radian->setObjectName(QStringLiteral("radioButton_Radian"));
         radioButton_Radian->setChecked(false);
 
         verticalLayout_25->addWidget(radioButton_Radian);
 
-        radioButton_Degree = new QRadioButton(layoutWidget7);
+        radioButton_Degree = new QRadioButton(layoutWidget9);
         radioButton_Degree->setObjectName(QStringLiteral("radioButton_Degree"));
         radioButton_Degree->setChecked(true);
 
         verticalLayout_25->addWidget(radioButton_Degree);
 
-        layoutWidget8 = new QWidget(groupBox_Information);
-        layoutWidget8->setObjectName(QStringLiteral("layoutWidget8"));
-        layoutWidget8->setGeometry(QRect(390, 25, 341, 116));
-        verticalLayout_slider = new QVBoxLayout(layoutWidget8);
+        layoutWidget10 = new QWidget(groupBox_Information);
+        layoutWidget10->setObjectName(QStringLiteral("layoutWidget10"));
+        layoutWidget10->setGeometry(QRect(390, 25, 341, 116));
+        verticalLayout_slider = new QVBoxLayout(layoutWidget10);
         verticalLayout_slider->setSpacing(6);
         verticalLayout_slider->setContentsMargins(11, 11, 11, 11);
         verticalLayout_slider->setObjectName(QStringLiteral("verticalLayout_slider"));
@@ -1488,13 +1528,13 @@ public:
         horizontalLayout_11 = new QHBoxLayout();
         horizontalLayout_11->setSpacing(6);
         horizontalLayout_11->setObjectName(QStringLiteral("horizontalLayout_11"));
-        label = new QLabel(layoutWidget8);
+        label = new QLabel(layoutWidget10);
         label->setObjectName(QStringLiteral("label"));
         label->setMinimumSize(QSize(45, 0));
 
         horizontalLayout_11->addWidget(label);
 
-        label_var0_min = new QLabel(layoutWidget8);
+        label_var0_min = new QLabel(layoutWidget10);
         label_var0_min->setObjectName(QStringLiteral("label_var0_min"));
         label_var0_min->setMinimumSize(QSize(30, 0));
         label_var0_min->setFont(font);
@@ -1502,7 +1542,7 @@ public:
 
         horizontalLayout_11->addWidget(label_var0_min);
 
-        horizontalSlider_var0 = new QSlider(layoutWidget8);
+        horizontalSlider_var0 = new QSlider(layoutWidget10);
         horizontalSlider_var0->setObjectName(QStringLiteral("horizontalSlider_var0"));
         horizontalSlider_var0->setMaximum(999);
         horizontalSlider_var0->setSliderPosition(0);
@@ -1511,7 +1551,7 @@ public:
 
         horizontalLayout_11->addWidget(horizontalSlider_var0);
 
-        label_var0_max = new QLabel(layoutWidget8);
+        label_var0_max = new QLabel(layoutWidget10);
         label_var0_max->setObjectName(QStringLiteral("label_var0_max"));
         label_var0_max->setMinimumSize(QSize(30, 0));
         label_var0_max->setFont(font);
@@ -1525,13 +1565,13 @@ public:
         horizontalLayout_12 = new QHBoxLayout();
         horizontalLayout_12->setSpacing(6);
         horizontalLayout_12->setObjectName(QStringLiteral("horizontalLayout_12"));
-        label_2 = new QLabel(layoutWidget8);
+        label_2 = new QLabel(layoutWidget10);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setMinimumSize(QSize(45, 0));
 
         horizontalLayout_12->addWidget(label_2);
 
-        label_var1_min = new QLabel(layoutWidget8);
+        label_var1_min = new QLabel(layoutWidget10);
         label_var1_min->setObjectName(QStringLiteral("label_var1_min"));
         label_var1_min->setMinimumSize(QSize(30, 0));
         label_var1_min->setFont(font);
@@ -1539,7 +1579,7 @@ public:
 
         horizontalLayout_12->addWidget(label_var1_min);
 
-        horizontalSlider_var1 = new QSlider(layoutWidget8);
+        horizontalSlider_var1 = new QSlider(layoutWidget10);
         horizontalSlider_var1->setObjectName(QStringLiteral("horizontalSlider_var1"));
         horizontalSlider_var1->setMaximum(999);
         horizontalSlider_var1->setTracking(false);
@@ -1547,7 +1587,7 @@ public:
 
         horizontalLayout_12->addWidget(horizontalSlider_var1);
 
-        label_var1_max = new QLabel(layoutWidget8);
+        label_var1_max = new QLabel(layoutWidget10);
         label_var1_max->setObjectName(QStringLiteral("label_var1_max"));
         label_var1_max->setMinimumSize(QSize(30, 0));
         label_var1_max->setFont(font);
@@ -1561,13 +1601,13 @@ public:
         horizontalLayout_13 = new QHBoxLayout();
         horizontalLayout_13->setSpacing(6);
         horizontalLayout_13->setObjectName(QStringLiteral("horizontalLayout_13"));
-        label_3 = new QLabel(layoutWidget8);
+        label_3 = new QLabel(layoutWidget10);
         label_3->setObjectName(QStringLiteral("label_3"));
         label_3->setMinimumSize(QSize(45, 0));
 
         horizontalLayout_13->addWidget(label_3);
 
-        label_var2_min = new QLabel(layoutWidget8);
+        label_var2_min = new QLabel(layoutWidget10);
         label_var2_min->setObjectName(QStringLiteral("label_var2_min"));
         label_var2_min->setMinimumSize(QSize(30, 0));
         label_var2_min->setFont(font);
@@ -1575,7 +1615,7 @@ public:
 
         horizontalLayout_13->addWidget(label_var2_min);
 
-        horizontalSlider_var2 = new QSlider(layoutWidget8);
+        horizontalSlider_var2 = new QSlider(layoutWidget10);
         horizontalSlider_var2->setObjectName(QStringLiteral("horizontalSlider_var2"));
         horizontalSlider_var2->setMaximum(999);
         horizontalSlider_var2->setTracking(false);
@@ -1583,7 +1623,7 @@ public:
 
         horizontalLayout_13->addWidget(horizontalSlider_var2);
 
-        label_var2_max = new QLabel(layoutWidget8);
+        label_var2_max = new QLabel(layoutWidget10);
         label_var2_max->setObjectName(QStringLiteral("label_var2_max"));
         label_var2_max->setMinimumSize(QSize(30, 0));
         label_var2_max->setFont(font);
@@ -1597,13 +1637,13 @@ public:
         horizontalLayout_14 = new QHBoxLayout();
         horizontalLayout_14->setSpacing(6);
         horizontalLayout_14->setObjectName(QStringLiteral("horizontalLayout_14"));
-        label_4 = new QLabel(layoutWidget8);
+        label_4 = new QLabel(layoutWidget10);
         label_4->setObjectName(QStringLiteral("label_4"));
         label_4->setMinimumSize(QSize(45, 0));
 
         horizontalLayout_14->addWidget(label_4);
 
-        label_var3_min = new QLabel(layoutWidget8);
+        label_var3_min = new QLabel(layoutWidget10);
         label_var3_min->setObjectName(QStringLiteral("label_var3_min"));
         label_var3_min->setMinimumSize(QSize(30, 0));
         label_var3_min->setFont(font);
@@ -1611,7 +1651,7 @@ public:
 
         horizontalLayout_14->addWidget(label_var3_min);
 
-        horizontalSlider_var3 = new QSlider(layoutWidget8);
+        horizontalSlider_var3 = new QSlider(layoutWidget10);
         horizontalSlider_var3->setObjectName(QStringLiteral("horizontalSlider_var3"));
         horizontalSlider_var3->setMaximum(999);
         horizontalSlider_var3->setPageStep(100);
@@ -1620,7 +1660,7 @@ public:
 
         horizontalLayout_14->addWidget(horizontalSlider_var3);
 
-        label_var3_max = new QLabel(layoutWidget8);
+        label_var3_max = new QLabel(layoutWidget10);
         label_var3_max->setObjectName(QStringLiteral("label_var3_max"));
         label_var3_max->setMinimumSize(QSize(30, 0));
         label_var3_max->setFont(font);
@@ -1637,10 +1677,10 @@ public:
         tabWidget_Operation->addTab(tab1_Control, QString());
         tab2_Plot = new QWidget();
         tab2_Plot->setObjectName(QStringLiteral("tab2_Plot"));
-        layoutWidget9 = new QWidget(tab2_Plot);
-        layoutWidget9->setObjectName(QStringLiteral("layoutWidget9"));
-        layoutWidget9->setGeometry(QRect(20, 10, 371, 191));
-        verticalLayout_Plot = new QVBoxLayout(layoutWidget9);
+        layoutWidget11 = new QWidget(tab2_Plot);
+        layoutWidget11->setObjectName(QStringLiteral("layoutWidget11"));
+        layoutWidget11->setGeometry(QRect(20, 10, 371, 191));
+        verticalLayout_Plot = new QVBoxLayout(layoutWidget11);
         verticalLayout_Plot->setSpacing(6);
         verticalLayout_Plot->setContentsMargins(11, 11, 11, 11);
         verticalLayout_Plot->setObjectName(QStringLiteral("verticalLayout_Plot"));
@@ -1648,17 +1688,17 @@ public:
         horizontalLayout_Chart1 = new QHBoxLayout();
         horizontalLayout_Chart1->setSpacing(6);
         horizontalLayout_Chart1->setObjectName(QStringLiteral("horizontalLayout_Chart1"));
-        label_Chart1 = new QLabel(layoutWidget9);
+        label_Chart1 = new QLabel(layoutWidget11);
         label_Chart1->setObjectName(QStringLiteral("label_Chart1"));
 
         horizontalLayout_Chart1->addWidget(label_Chart1);
 
-        comboBox_Chart1_x = new QComboBox(layoutWidget9);
+        comboBox_Chart1_x = new QComboBox(layoutWidget11);
         comboBox_Chart1_x->setObjectName(QStringLiteral("comboBox_Chart1_x"));
 
         horizontalLayout_Chart1->addWidget(comboBox_Chart1_x);
 
-        comboBox_Chart1_y = new QComboBox(layoutWidget9);
+        comboBox_Chart1_y = new QComboBox(layoutWidget11);
         comboBox_Chart1_y->setObjectName(QStringLiteral("comboBox_Chart1_y"));
 
         horizontalLayout_Chart1->addWidget(comboBox_Chart1_y);
@@ -1669,17 +1709,17 @@ public:
         horizontalLayout_Chart2 = new QHBoxLayout();
         horizontalLayout_Chart2->setSpacing(6);
         horizontalLayout_Chart2->setObjectName(QStringLiteral("horizontalLayout_Chart2"));
-        label_Chart2 = new QLabel(layoutWidget9);
+        label_Chart2 = new QLabel(layoutWidget11);
         label_Chart2->setObjectName(QStringLiteral("label_Chart2"));
 
         horizontalLayout_Chart2->addWidget(label_Chart2);
 
-        comboBox_Chart2_x = new QComboBox(layoutWidget9);
+        comboBox_Chart2_x = new QComboBox(layoutWidget11);
         comboBox_Chart2_x->setObjectName(QStringLiteral("comboBox_Chart2_x"));
 
         horizontalLayout_Chart2->addWidget(comboBox_Chart2_x);
 
-        comboBox_Chart2_y = new QComboBox(layoutWidget9);
+        comboBox_Chart2_y = new QComboBox(layoutWidget11);
         comboBox_Chart2_y->setObjectName(QStringLiteral("comboBox_Chart2_y"));
 
         horizontalLayout_Chart2->addWidget(comboBox_Chart2_y);
@@ -1690,17 +1730,17 @@ public:
         horizontalLayout_Chart3 = new QHBoxLayout();
         horizontalLayout_Chart3->setSpacing(6);
         horizontalLayout_Chart3->setObjectName(QStringLiteral("horizontalLayout_Chart3"));
-        label_Chart3 = new QLabel(layoutWidget9);
+        label_Chart3 = new QLabel(layoutWidget11);
         label_Chart3->setObjectName(QStringLiteral("label_Chart3"));
 
         horizontalLayout_Chart3->addWidget(label_Chart3);
 
-        comboBox_Chart3_x = new QComboBox(layoutWidget9);
+        comboBox_Chart3_x = new QComboBox(layoutWidget11);
         comboBox_Chart3_x->setObjectName(QStringLiteral("comboBox_Chart3_x"));
 
         horizontalLayout_Chart3->addWidget(comboBox_Chart3_x);
 
-        comboBox_Chart3_y = new QComboBox(layoutWidget9);
+        comboBox_Chart3_y = new QComboBox(layoutWidget11);
         comboBox_Chart3_y->setObjectName(QStringLiteral("comboBox_Chart3_y"));
 
         horizontalLayout_Chart3->addWidget(comboBox_Chart3_y);
@@ -1711,17 +1751,17 @@ public:
         horizontalLayout_Chart4 = new QHBoxLayout();
         horizontalLayout_Chart4->setSpacing(6);
         horizontalLayout_Chart4->setObjectName(QStringLiteral("horizontalLayout_Chart4"));
-        label_Chart4 = new QLabel(layoutWidget9);
+        label_Chart4 = new QLabel(layoutWidget11);
         label_Chart4->setObjectName(QStringLiteral("label_Chart4"));
 
         horizontalLayout_Chart4->addWidget(label_Chart4);
 
-        comboBox_Chart4_x = new QComboBox(layoutWidget9);
+        comboBox_Chart4_x = new QComboBox(layoutWidget11);
         comboBox_Chart4_x->setObjectName(QStringLiteral("comboBox_Chart4_x"));
 
         horizontalLayout_Chart4->addWidget(comboBox_Chart4_x);
 
-        comboBox_Chart4_y = new QComboBox(layoutWidget9);
+        comboBox_Chart4_y = new QComboBox(layoutWidget11);
         comboBox_Chart4_y->setObjectName(QStringLiteral("comboBox_Chart4_y"));
 
         horizontalLayout_Chart4->addWidget(comboBox_Chart4_y);
@@ -1729,7 +1769,7 @@ public:
 
         verticalLayout_Plot->addLayout(horizontalLayout_Chart4);
 
-        pushButton_Plot = new QPushButton(layoutWidget9);
+        pushButton_Plot = new QPushButton(layoutWidget11);
         pushButton_Plot->setObjectName(QStringLiteral("pushButton_Plot"));
         pushButton_Plot->setFont(font);
 
@@ -1796,6 +1836,10 @@ public:
         radioButton_QVA->setText(QApplication::translate("MainWindow", "QVA", Q_NULLPTR));
         radioButton_QVT->setText(QApplication::translate("MainWindow", "QVT", Q_NULLPTR));
         pushButton_Change_Limit->setText(QApplication::translate("MainWindow", "CHANGE", Q_NULLPTR));
+        groupBox_2->setTitle(QApplication::translate("MainWindow", "Method", Q_NULLPTR));
+        radioButton_Auto->setText(QApplication::translate("MainWindow", "AUTO", Q_NULLPTR));
+        radioButton_SemiAuto->setText(QApplication::translate("MainWindow", "SEMI-AUTO", Q_NULLPTR));
+        radioButton_Manual->setText(QApplication::translate("MainWindow", "MANUAL", Q_NULLPTR));
         radioButton_Stop->setText(QApplication::translate("MainWindow", "STOP", Q_NULLPTR));
         radioButton_Scan->setText(QApplication::translate("MainWindow", "SCAN LIMIT", Q_NULLPTR));
         radioButton_MoveHome->setText(QApplication::translate("MainWindow", "MOVE HOME", Q_NULLPTR));
@@ -1807,6 +1851,7 @@ public:
         radioButton_ReadStatus->setText(QApplication::translate("MainWindow", "READ STATUS", Q_NULLPTR));
         radioButton_ReadPosition->setText(QApplication::translate("MainWindow", "READ POSITION", Q_NULLPTR));
         radioButton_Setting->setText(QApplication::translate("MainWindow", "SETTING", Q_NULLPTR));
+        radioButton_Method->setText(QApplication::translate("MainWindow", "METHOD", Q_NULLPTR));
         pushButton_Request->setText(QApplication::translate("MainWindow", "REQUEST", Q_NULLPTR));
         pushButton_Startup->setText(QApplication::translate("MainWindow", "START UP", Q_NULLPTR));
         groupBox_Teach->setTitle(QApplication::translate("MainWindow", "Key Board", Q_NULLPTR));

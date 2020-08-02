@@ -1053,6 +1053,55 @@
              </layout>
             </widget>
            </widget>
+           <widget class="QGroupBox" name="groupBox_2">
+            <property name="geometry">
+             <rect>
+              <x>210</x>
+              <y>240</y>
+              <width>181</width>
+              <height>71</height>
+             </rect>
+            </property>
+            <property name="title">
+             <string>Method</string>
+            </property>
+            <widget class="QWidget" name="">
+             <property name="geometry">
+              <rect>
+               <x>60</x>
+               <y>10</y>
+               <width>81</width>
+               <height>61</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_28">
+              <item>
+               <widget class="QRadioButton" name="radioButton_Auto">
+                <property name="text">
+                 <string>AUTO</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="radioButton_SemiAuto">
+                <property name="text">
+                 <string>SEMI-AUTO</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="radioButton_Manual">
+                <property name="text">
+                 <string>MANUAL</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
           </widget>
           <widget class="QWidget" name="layoutWidget">
            <property name="geometry">
@@ -1207,6 +1256,19 @@
               </property>
               <property name="text">
                <string>SETTING</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButton_Method">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>METHOD</string>
               </property>
              </widget>
             </item>
@@ -1387,7 +1449,7 @@
             <property name="title">
              <string>Joysticks</string>
             </property>
-            <widget class="QWidget" name="">
+            <widget class="QWidget" name="layoutWidget">
              <property name="geometry">
               <rect>
                <x>10</x>
@@ -1428,7 +1490,7 @@
              </layout>
             </widget>
            </widget>
-           <widget class="QWidget" name="">
+           <widget class="QWidget" name="layoutWidget">
             <property name="geometry">
              <rect>
               <x>20</x>

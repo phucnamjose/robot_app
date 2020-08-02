@@ -410,19 +410,12 @@ void MainWindow::serial_workStart() {
     time_pre = -0.01;
     num_sample = 0;
     serial_displayPosition();
-   // logsWrite(respond, QColor(220, 80, 115));
-    // Set X range
-    for( ChartWindow *figure : m_figure) {
-        for( int  i = 0;  i < figure->var_list.count(); ++i) {
-            if (figure->var_list.at(i).first == 0)
-            {
-                figure->setRangeX(i, 0, ceil(m_robot->getTotalTime()) + pre_time_total);
-            } else if (figure->var_list.at(i).first == 6) {
-                figure->setRangeX(i, -360, 360);
-                figure->setRangeY(i, 0 , 360);
-            }
-        }
+    if (vec_time.size() > 0) {
+        pre_time_total  = vec_time.last();
+        pre_lenght = vec_pos[8].last();
     }
+    m_ui->progressBar_Running->setValue(0);
+   // logsWrite(respond, QColor(220, 80, 115));
 }
 
 void MainWindow::serial_workRunning(double x,double y, double z, double roll,
@@ -737,6 +730,16 @@ void MainWindow::on_pushButton_Request_Clicked() {
         if ( m_robot->robotSetting(coor, trajec) ) {
             return;
         }
+    } else if(m_ui->radioButton_Method->isChecked()) {
+        RobotControll::robotMethod_t method;
+        if(m_ui->radioButton_Auto->isChecked()) {
+            method = RobotControll:: METHOD_AUTO;
+        } else if (m_ui->radioButton_SemiAuto->isChecked()) {
+            method = RobotControll:: METHOD_SEMI_AUTO;
+        } else if (m_ui->radioButton_Manual->isChecked()) {
+            method = RobotControll:: METHOD_MANUAL;
+        }
+        m_robot->robotMethodChange(method);
     }
 }
 
@@ -837,7 +840,7 @@ void MainWindow::keyboardPressHandle() {
             break;
         }
     }
-    timer_keyboard->start(500);
+    timer_keyboard->start(m_robot->keyboard_time_period);
 }
 
 void MainWindow::keyboardReleaseHandle() {
@@ -871,7 +874,7 @@ bool MainWindow:: joystick_init() {
             connect(joystick, &Joysticks::buttonLeftChanged,     this,
                               [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Y_V1_DEC);});
             connect(joystick, &Joysticks::buttonRightChanged,  this,
-                              [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Y_V1_DEC);});
+                              [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Y_V1_INC);});
             connect(joystick, &Joysticks::buttonYChanged,          this,
                             [this](bool value) {this->joystick_event(value, Joysticks::FUNC_Z_V2_INC);});
             connect(joystick, &Joysticks::buttonAChanged,          this,
@@ -883,15 +886,11 @@ bool MainWindow:: joystick_init() {
             connect(joystick, &Joysticks::buttonL1Changed,         this,
                             [this](bool value) {this->joystick_event(value, Joysticks::FUNC_OUTPUT);});
             connect(joystick, &Joysticks::buttonL2Changed,        this,
-                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_CHANGE_SPEED);});
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_INC_SPEED);});
             connect(joystick, &Joysticks::buttonR1Changed,        this,
                             [this](bool value) {this->joystick_event(value, Joysticks::FUNC_CHANGE_SPACE);});
-//            connect(joystick, &Joysticks::buttonR2Changed,        this,
-//                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC);});
-//            connect(joystick, &Joysticks::buttonSelectChanged, this,
-//                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_X_V0_DEC);});
-//            connect(joystick, &Joysticks::buttonStartChanged,     this,
-//                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_X_V0_DEC);});
+            connect(joystick, &Joysticks::buttonR2Changed,        this,
+                            [this](bool value) {this->joystick_event(value, Joysticks::FUNC_DEC_SPEED);});
     return true;
     }
     return false;
@@ -906,7 +905,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                 key_robot = RobotControll::KEY_VAR0_INC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_X_V0_DEC:
             if(is_cartesian) {
@@ -914,7 +913,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                  key_robot = RobotControll::KEY_VAR0_DEC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_Y_V1_INC:
             if(is_cartesian) {
@@ -922,7 +921,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                  key_robot = RobotControll::KEY_VAR1_INC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_Y_V1_DEC:
             if(is_cartesian) {
@@ -930,7 +929,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                  key_robot = RobotControll::KEY_VAR1_DEC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_Z_V2_INC:
             if(is_cartesian) {
@@ -938,7 +937,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                  key_robot = RobotControll::KEY_VAR2_INC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_Z_V2_DEC:
             if(is_cartesian) {
@@ -946,7 +945,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                  key_robot = RobotControll::KEY_VAR2_DEC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_ROLL_V3_INC:
             if(is_cartesian) {
@@ -954,7 +953,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                  key_robot = RobotControll::KEY_VAR3_INC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_ROLL_V3_DEC:
             if(is_cartesian) {
@@ -962,7 +961,7 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
             } else {
                  key_robot = RobotControll::KEY_VAR3_DEC;
             }
-            timer_keyboard->start(500);
+            timer_keyboard->start(m_robot->keyboard_time_period);
             break;
         case Joysticks::FUNC_OUTPUT:
             m_robot->robotOutputToggle();
@@ -975,8 +974,11 @@ void  MainWindow::joystick_event(bool pressed, Joysticks::joysticksFunction_t fu
                 m_ui->label_Space->setText("SPACE: JOINT");
             }
             break;
-        case Joysticks::FUNC_CHANGE_SPEED:
-
+        case Joysticks::FUNC_INC_SPEED:
+            m_robot->robotKeySpeedInc();
+            break;
+        case Joysticks::FUNC_DEC_SPEED:
+            m_robot->robotKeySpeedDec();
             break;
         default:
             break;

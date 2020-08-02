@@ -22,7 +22,8 @@ public:
         FUNC_ROLL_V3_DEC,
         FUNC_OUTPUT,
         FUNC_CHANGE_SPACE,
-        FUNC_CHANGE_SPEED,
+        FUNC_INC_SPEED,
+        FUNC_DEC_SPEED
     };
 };
 

@@ -16,7 +16,6 @@
 #define  START_CHAR         (0x28)
 #define  END_CHAR            (0x29)
 
-
 using namespace std;
 
 class RobotControll : public QSerialPort
@@ -48,7 +47,8 @@ class RobotControll : public QSerialPort
         CMD_JOB_PUSH_OUTPUT,
         CMD_JOB_TEST,
         CMD_JOB_RUN,// 7 job
-        CMD_KEYBOARD, // 1 key
+        CMD_KEYBOARD, // 2 key
+        CMD_KEY_SPEED,
         NUM_OF_CMD // = 19 CMD
     };
 
@@ -74,7 +74,8 @@ class RobotControll : public QSerialPort
         "JTES",
         "JRUN ", // 7 job
 
-        "KEYB",// 1 key
+        "KEYB",// 2 key
+        "KSPE"
     };
 
     enum robotRespond_t {
@@ -103,7 +104,7 @@ class RobotControll : public QSerialPort
     };
 
     enum robotKeyBoard_t{
-        KEY_X_INC,
+        KEY_X_INC = 0,
         KEY_X_DEC,
         KEY_Y_INC,
         KEY_Y_DEC,
@@ -157,6 +158,7 @@ class RobotControll : public QSerialPort
         Param_TimeRun
     };
 
+    const int keyboard_time_period = 600;
   signals:
             void    commandTimeOut();
             void    commandWorkStart(double x,double y, double z, double roll,
@@ -217,8 +219,10 @@ private:
             bool    robotJobPushOutput(bool output);
             bool    robotJobTest();
             bool    robotJobRun();
-            // 1 key board
+            // 3 key board
             bool    robotKeyBoard(robotKeyBoard_t key);
+            bool    robotKeySpeedInc();
+            bool    robotKeySpeedDec();
 
             bool       isScan();
             double  getX();
@@ -250,6 +254,7 @@ private:
             double     factor_accelerate = 0.3;
             double     factor_velocity      = 0.3;
             double     time_total_limit              = 10;
+            int              key_speed = 1;
 };
 
 #endif // ROBOTCONTROLL_H
