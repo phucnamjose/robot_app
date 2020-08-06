@@ -83,16 +83,12 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     compute_init();
     joystick_init();
     qDebug() << "Program START \n";
+    qDebug() << "main thread is:" << QThread::currentThreadId();
 }
 
 MainWindow::~MainWindow()
 {
-    for(ChartWindow *figure : m_figure) {
-        delete figure;
-    }
     delete m_ui;
-    delete m_robot;
-    delete timer_update_comport;
 }
 
     /*-------------------------- DECLARE -----------------------------*/
@@ -294,27 +290,34 @@ void MainWindow::serial_initComboBox() {
 }
 
 void MainWindow::serial_openPort() {
-    if(m_robot->open(QIODevice::ReadWrite)) {
-        m_ui->comboBox_Baudrate->setEnabled(false);
-        m_ui->comboBox_Comport->setEnabled(false);
-        m_ui->pushButton_Connect->setText(tr("DISCONNECT"));
-        m_ui->label_connectStatus->setText(tr("Connected"));
-        timer_update_comport->stop();
+    if(!m_robot->isOpen()) {
+        if (m_robot->openComPort(comportName)) {
+            m_ui->comboBox_Baudrate->setEnabled(false);
+            m_ui->comboBox_Comport->setEnabled(false);
+            m_ui->pushButton_Connect->setText(tr("DISCONNECT"));
+            m_ui->label_connectStatus->setText(tr("Connected"));
+            timer_update_comport->stop();
+        } else {
+            QMessageBox::critical(this, tr("Error"), "Open comport FAIL");
+        }
     } else {
-        QMessageBox::critical(this, tr("Error"), m_robot->errorString());
+       QMessageBox::critical(this, tr("Error"), "comport isn't closed");
     }
 }
 
 void MainWindow::serial_closePort() {
     if(m_robot->isOpen()) {
-        m_robot->close();
-        m_ui->comboBox_Baudrate->setEnabled(true);
-        m_ui->comboBox_Comport->setEnabled(true);
-        m_ui->pushButton_Connect->setText("CONNECT");
-        m_ui->label_connectStatus->setText(tr("Disconnected"));
-        timer_update_comport->start(1000);
+        if (m_robot->closeComPort()) {
+            m_ui->comboBox_Baudrate->setEnabled(true);
+            m_ui->comboBox_Comport->setEnabled(true);
+            m_ui->pushButton_Connect->setText("CONNECT");
+            m_ui->label_connectStatus->setText(tr("Disconnected"));
+            timer_update_comport->start(1000);
+        } else {
+            QMessageBox::critical(this, tr("Error"), "Close comport FAIL");
+        }
     } else {
-        QMessageBox::critical(this, tr("Error"), m_robot->errorString());
+        QMessageBox::critical(this, tr("Error"), "comport isn't opened");
     }
 }
 
@@ -340,23 +343,9 @@ void MainWindow::serial_updatePortName() {
 }
 
 void MainWindow::serial_updateSetting() {
-    m_robot->setPortName(m_ui->comboBox_Comport->currentText());
-    m_robot->setBaudRate(static_cast<QSerialPort::BaudRate>
-                          (m_ui->comboBox_Baudrate->itemData(m_ui->comboBox_Baudrate->currentIndex()).toInt()));
-    m_robot->setDataBits(QSerialPort::Data8);
-    m_robot->setParity(QSerialPort::NoParity);
-    m_robot->setStopBits(QSerialPort::OneStop);
-    m_robot->setFlowControl(QSerialPort::NoFlowControl);
-    //qDebug() << m_robot->portName() << m_robot->baudRate();
+    comportName = m_ui->comboBox_Comport->currentText();
 }
 
-void MainWindow::serial_handleError(QSerialPort::SerialPortError error)
-{
-    if (error == QSerialPort::ResourceError) {
-        QMessageBox::critical(this, tr("Critical Error"), m_robot->errorString());
-        serial_closePort();
-    }
-}
 
 void MainWindow::serial_logCommand(QByteArray command) {
     logsWrite(tr(command), QColor(0,0,140));
@@ -549,7 +538,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::on_pushButton_startUpCommand() {
     // Check
-    if (!(m_robot->isOpen()))  {
+    if (true)  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }
@@ -563,7 +552,7 @@ void MainWindow::on_pushButton_startUpCommand() {
 void MainWindow::on_pushButton_Stop_clicked()
 {
     // Check
-    if (!(m_robot->isOpen()))  {
+    if (true)  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }
@@ -601,7 +590,7 @@ void MainWindow::on_pushButton_Plot_Clicked() {
 
 void MainWindow::on_pushButton_Request_Clicked() {
     // Check
-    if (!(m_robot->isOpen()))  {
+    if (true)  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }
@@ -745,7 +734,7 @@ void MainWindow::on_pushButton_Request_Clicked() {
 
 void MainWindow::on_pushButton_Output_Clicked() {
     // Check
-    if (!(m_robot->isOpen()))  {
+    if (true)  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }

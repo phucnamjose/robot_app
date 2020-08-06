@@ -2,8 +2,6 @@
 #define ROBOTCONTROLL_H
 
 #include <QObject>
-#include <QtSerialPort/QSerialPort>
-#include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 #include <QTimer>
 #include <QEventLoop>
@@ -12,13 +10,14 @@
 #include <string.h>
 #include <sstream>
 #include "debug.hpp"
+#include "serialport.hpp"
 
 #define  START_CHAR         (0x28)
 #define  END_CHAR            (0x29)
 
 using namespace std;
 
-class RobotControll : public QSerialPort
+class RobotControll : public QObject
 {
     Q_OBJECT
 
@@ -160,6 +159,7 @@ class RobotControll : public QSerialPort
 
     const int keyboard_time_period = 600;
   signals:
+            // to main thread
             void    commandTimeOut();
             void    commandWorkStart(double x,double y, double z, double roll,
                                                                     double var0, double var1, double var2, double var3,
@@ -177,16 +177,35 @@ class RobotControll : public QSerialPort
             void    respondPosition(QByteArray repsond);
             void    respondArrived(QByteArray repsond);
 
+            void    child_updatePosition(double X, double Y,double Z, double ROLL,
+                                   double VAR0, double VAR1, double VAR2, double VAR3,
+                                   double LENGHT, double TIME_RUN, double TIME_TOTAL);
+            //to child thread
+            void    main_sendThroughSerial(QByteArray data);
+
+private slots:
+            void    child_sendThroughSerial(QByteArray data);
+            void    main_updatePosition(double X,double Y, double Z, double ROLL,
+                                        double VAR0, double VAR1, double VAR2, double VAR3,
+                                        double LENGHT, double TIME_RUN, double TIME_TOTAL);
 private:
-            bool    packData(QByteArray &data);
+            // child thread call
             bool    unPackData(QByteArray &data);
-            bool    writeData(QByteArray &data);
             void    readData();
             bool   processRespond(QByteArray &respond);
-            bool   list2position(QByteArrayList list);
-            bool   setCommand(robotCommand_t cmd, int time, const QString para = "");
+            bool   list2position(QByteArrayList list, double &X, double &Y , double &Z, double &ROLL,
+                                                   double &J0, double &J1,  double &J2, double &J3, double &LENGHT,
+                                                    double &TIME, double &TOTAL_TIME);
+            // main thread call
+            bool    writeData(QByteArray &data);
+            bool    packData(QByteArray &data);
+            bool   setCommand(robotCommand_t cmd, const QString para = "");
 
  public:
+            bool   isOpen();
+            bool   openComPort(QString port_name);
+            bool   closeComPort();
+
             void    robotResetId();
             bool    setModeInite(robotModeInit_t type);
             bool    setAccelerate(double factor);
@@ -239,16 +258,22 @@ private:
             double  getValue(robotParam_t param);
 
  private:
-            QByteArray data_read;
-            robotModeInit_t     mode_init = MODE_INIT_QVA;
+            SerialPort  *port;
+            QThread         *my_thread;
 
+            // receive variable ---> child thread ---> main thread do not access
+            QByteArray data_read;
             int              id_command  = 1;
             bool          istimeout         = false;
-            bool          output_robot = false;
             bool          scan                    = false;
             double     x, y, z, roll;
             double     var0, var1, var2, var3;
             double     lenght;
+
+            // transmit varialble ---> main thread
+            bool           portOpen = false;
+            robotModeInit_t     mode_init = MODE_INIT_QVA;
+            bool          output_robot = false;
             double     time_run = 0;
             double     time_total = 0;
             double     factor_accelerate = 0.3;

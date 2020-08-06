@@ -57,24 +57,27 @@ private:
     void    serial_setDefault();
     void    serial_openPort();
     void    serial_closePort();
+
     /* UI */
     void    ui_init();
     void    logsWrite(QString message, QColor c);
     bool   joystick_init();
     void    joystick_event(bool pressed, Joysticks::joysticksFunction_t func);
+
 private slots:
     // Plot
     void    plot_figureClosed(ChartWindow *figure);
     void    plot_timerFigure_handle();
+
     //Compute
     void    compute_init();
     void    compute_newData(double x,double y, double z, double roll,
                             double var0, double var1, double var2, double var3,
                             double lenght, double time_run, double time_total);
+
     // Serial
     void    serial_updatePortName();    // connect timeout timer check
     void    serial_updateSetting();    // connect current text change
-    void    serial_handleError(QSerialPort::SerialPortError error);    // connect error handle
     void    serial_logCommand(QByteArray command);    // connect robot signal
     void    serial_logRespond(QByteArray respond);
     void    serial_displayPosition();
@@ -85,6 +88,7 @@ private slots:
     void    serial_workEnd(double x,double y, double z, double roll,
                                 double var0, double var1, double var2, double var3,
                                 double lenght, double time_run, double time_total);
+
     // UI
     void    on_pushButton_startUpCommand();
     void    on_pushButton_Connect_Clicked();
@@ -111,6 +115,7 @@ private:
     QList<ChartWindow *> m_figure;
     int  num_sample_plot;
     QTimer                       *timer_update_figure      = nullptr;
+
     // Compute
     bool collect_data = false;
     int  num_sample;
@@ -124,16 +129,19 @@ private:
     double vel_pre[9];
     double acc_pre[9];
      QTimer                       *timer_update_display      = nullptr;
+
     // Serial
-    RobotControll        *m_robot               = nullptr;
+     QString                     comportName;
+    RobotControll        *m_robot                = nullptr;
     QTimer                      *timer_update_comport      = nullptr;
     bool                            is_cartesian             = true;
     int                                 joysticks_speed    = 1;
+
     // UI
-    Ui::MainWindow    *m_ui                       = nullptr; 
+    Ui::MainWindow    *m_ui                        = nullptr;
     QLabel                       *m_status               = nullptr;
     QTimer                      *timer_keyboard = nullptr;
-    Joysticks                  *joystick                  = nullptr;
+    Joysticks                  *joystick                   = nullptr;
     bool                            joysticks_identify = false;
     RobotControll::robotKeyBoard_t      key_robot;
 };

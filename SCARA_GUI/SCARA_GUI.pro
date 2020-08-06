@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     joysticks.cpp \
         mainwindow.cpp \
     robotcontroll.cpp \
-    debug.cpp
+    debug.cpp \
+    serialport.cpp
 
 HEADERS  += \
     chart.hpp \
@@ -30,7 +31,8 @@ HEADERS  += \
     debug.hpp \
     joysticks.hpp \
     mainwindow.hpp \
-    robotcontroll.hpp
+    robotcontroll.hpp \
+    serialport.hpp
 
 FORMS    += mainwindow.ui \
     chartwindow.ui

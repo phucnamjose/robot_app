@@ -1,39 +1,24 @@
 #include "robotcontroll.hpp"
 
 // Constructor
-RobotControll::RobotControll(QObject *parent):QSerialPort(parent)
+RobotControll::RobotControll(QObject *parent):QObject(parent)
 {
-    connect(this, &QSerialPort::readyRead, this, &RobotControll::readData);
+
 }
 
 // Deconstructor
 RobotControll::~RobotControll()
 {
-
-}
-
-// Pack Command
-bool RobotControll::packData(QByteArray &data)
-{
-    if(data.isNull() || data.isEmpty()) {
-        M_DEBUG("data input is empty");
-        return false;
+    if (portOpen) {
+        closeComPort();
     }
-    // packing
-    QByteArray temp;
-    temp.append(data);
-    temp.push_front((char)START_CHAR);
-    temp.push_back((char)END_CHAR);
-    data.clear();
-    data.append(temp);
-
-    Debug::_delete(temp);
-    return true;
 }
 
+//// Child thread call
 // Unpack Respond
 bool RobotControll::unPackData(QByteArray &data)
 {
+    qDebug() << "unpack thread is:" << QThread::currentThreadId();
     if(data.isNull() || data.isEmpty()) {
         M_DEBUG("data input is null");
         return false;
@@ -49,8 +34,6 @@ bool RobotControll::unPackData(QByteArray &data)
     temp.remove(temp.length()-1, 1);
     data.clear();
     data.append(temp);
-
-    Debug::_delete(temp);
     return true;
 }
 
@@ -59,27 +42,10 @@ string RobotControll::qbyteArray2string(QByteArray &data)
     return QString::fromLocal8Bit(data).toStdString().c_str();
 }
 
-// Send Command to Robot
-bool RobotControll::writeData(QByteArray &data) {
-    if(this->isOpen()) {
-        // Pack Payload
-        if( this->packData(data) == false ) {
-            M_DEBUG("pack fail");
-            return false;
-        }
-        this->write(data);
-        M_DEBUG(qbyteArray2string(data));
-    } else {
-        M_DEBUG("no device");
-        return false;
-    }
-    return true;
-}
-
 // Read Respond from Robot
 void RobotControll::readData() {
-    if(this->isOpen()) {
-        data_read.append(this->readAll());
+        qDebug() << "readData thread is:" << QThread::currentThreadId();
+        data_read.append(port->readAll());
         // Mutil command in 1 frame
         while(data_read.indexOf(END_CHAR) != -1) {
             QByteArray temp = data_read.left(data_read.indexOf(END_CHAR) +1);
@@ -95,15 +61,13 @@ void RobotControll::readData() {
                 continue;
             }
         }
-    } else {
-        M_DEBUG("no device");
-        return;
-    }
 }
 
 bool   RobotControll::processRespond(QByteArray &repsond) {
+    qDebug() << "processRespond thread is:" << QThread::currentThreadId();
     int id_cmd;
     QByteArray respond_code;
+    double X, Y , Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME;
     bool isInt;
     QByteArrayList list = repsond.split(' ');
     id_cmd =  list.at(0).toInt(&isInt);
@@ -126,24 +90,24 @@ bool   RobotControll::processRespond(QByteArray &repsond) {
 
         // POSI
         } else if (respond_code == ROBOTRESPOND[RPD_POSITION]) {
-             list2position(list);
+             list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
              // Send Signal
              emit respondPosition(repsond);
         // STAR
         } else if (respond_code == ROBOTRESPOND[RPD_START]) {
-            list2position(list);
+            list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
             // Send Signal
             emit commandWorkStart(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
 
         // RUNN
         } else if (respond_code == ROBOTRESPOND[RPD_RUNNING]) {
-            list2position(list);
+            list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
             // Send Signal
             emit commandWorkRunning(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
 
         // DONE
         } else if (respond_code == ROBOTRESPOND[RPD_DONE]) {
-            list2position(list);
+            list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
             // Send Signal
             emit commandWorkDone(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
 
@@ -170,7 +134,9 @@ bool   RobotControll::processRespond(QByteArray &repsond) {
     return true;
 }
 
-bool   RobotControll::list2position(QByteArrayList list) {
+bool   RobotControll::list2position(QByteArrayList list, double &X, double &Y , double &Z, double &ROLL,
+                                    double &J0, double &J1,  double &J2, double &J3, double &LENGHT,
+                                     double &TIME, double &TOTAL_TIME) {
     double value[11];
     bool isdouble[11];
     if (list.length() != 13) {
@@ -182,22 +148,44 @@ bool   RobotControll::list2position(QByteArrayList list) {
             return false;
         }
     }
-    var0  = value[0];
-    var1   = value[1];
-    var2  = value[2];
-    var3  = value[3];
-    x        = value[4];
-    y        = value[5];
-    z        = value[6];
-    roll    = value[7];
-    lenght = value[8];
-    time_total = value[9];
-    time_run = value[10];
+    J0  = value[0];
+    J1   = value[1];
+    J2  = value[2];
+    J3  = value[3];
+    X        = value[4];
+    Y        = value[5];
+    Z        = value[6];
+    ROLL    = value[7];
+    LENGHT = value[8];
+    TOTAL_TIME = value[9];
+    TIME = value[10];
     return true;
 }
 
+void   RobotControll:: child_sendThroughSerial(QByteArray data) {
+    port->write(data);
+}
+
+//// Main thread call
+
+void   RobotControll:: main_updatePosition(double X,double Y, double Z, double ROLL,
+                                           double VAR0, double VAR1, double VAR2, double VAR3,
+                                           double LENGHT, double TIME_RUN, double TIME_TOTAL) {
+    x = X;
+    y = Y;
+    z = Z;
+    roll = ROLL;
+    var0 = VAR0;
+    var1 = VAR1;
+    var2 = VAR2;
+    var3 = VAR3;
+    lenght = LENGHT;
+    time_run = TIME_RUN;
+    time_total = TIME_TOTAL;
+}
+
 // Intergrate parameters to Command
-bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para) {
+bool RobotControll::setCommand(robotCommand_t cmd, const QString para) {
     QByteArray command;
     QByteArray command_pack;
     command.clear();
@@ -210,7 +198,7 @@ bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para)
                        .arg(ROBOTCOMMAND[cmd]).arg(para));
     }
     command_pack.append(command);
-    if(this->writeData(command_pack) == false) {
+    if(writeData(command_pack) == false) {
         M_DEBUG("write data fail");
         Debug::_delete(command);
         return false;
@@ -221,7 +209,98 @@ bool RobotControll::setCommand(robotCommand_t cmd, int time, const QString para)
     return true;
 }
 
-/* For user */
+// Pack Command
+bool RobotControll::packData(QByteArray &data)
+{
+    if(data.isNull() || data.isEmpty()) {
+        M_DEBUG("data input is empty");
+        return false;
+    }
+    // packing
+    QByteArray temp;
+    temp.append(data);
+    temp.push_front((char)START_CHAR);
+    temp.push_back((char)END_CHAR);
+    data.clear();
+    data.append(temp);
+
+    Debug::_delete(temp);
+    return true;
+}
+
+// Send Command to Robot
+bool RobotControll::writeData(QByteArray &data) {
+    if(portOpen) {
+        // Pack Payload
+        if( this->packData(data) == false ) {
+            M_DEBUG("pack fail");
+            return false;
+        }
+        emit main_sendThroughSerial(data);
+        M_DEBUG(qbyteArray2string(data));
+    } else {
+        M_DEBUG("no device");
+        return false;
+    }
+    return true;
+}
+
+/*Publid  For user */
+bool  RobotControll::isOpen() {
+    return portOpen;
+}
+
+bool  RobotControll::openComPort(QString port_name) {
+     qDebug() << "openComPort thread is:" << QThread::currentThreadId();
+    if (portOpen) {
+        qDebug() << "ERROR: Port is opened!!!";
+        return false;
+    }
+    port = new SerialPort();
+    port->setPortName(port_name);
+    port->setBaudRate(QSerialPort::Baud115200);
+    port->setDataBits(QSerialPort::Data8); //data bits
+    port->setStopBits(QSerialPort::OneStop); //stop bit
+    port->setParity(QSerialPort::NoParity); //Parity
+    port->setFlowControl(QSerialPort::NoFlowControl); //flow control
+    if (port->open(QIODevice::ReadWrite)) {
+         qDebug() << "Port open SUCCESS!!!";
+         connect(port, &QSerialPort::readyRead, this, &RobotControll::readData, Qt::DirectConnection);
+         connect(this, &RobotControll::child_updatePosition,
+                            this, &RobotControll::main_updatePosition, Qt::QueuedConnection);
+         connect(this, &RobotControll::main_sendThroughSerial,
+                            this, &RobotControll::child_sendThroughSerial, Qt::QueuedConnection);
+
+         my_thread = new QThread();
+         connect(my_thread, &QThread::finished, port, &SerialPort::deleteLater);
+
+         port->moveToThread(my_thread);
+         my_thread->start();
+
+         portOpen = true;
+         return true;
+    } else {
+         qDebug() << "Port open FAIL!!!";
+
+         return false;
+    }
+}
+
+bool  RobotControll:: closeComPort() {
+    if (portOpen) {
+        //port->close();
+        //port->deleteLater();
+        my_thread->quit();
+        my_thread->wait();
+        my_thread->deleteLater();
+
+        portOpen = false;
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void RobotControll::robotResetId() {
     id_command = 1;
 }
@@ -263,21 +342,21 @@ bool    RobotControll::setTimeTotalLimit(double time) {
 }
 
 bool RobotControll::robotStop() {
-    if(this->setCommand(this->CMD_STOPNOW, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_STOPNOW, tr("")) == false ) {
         return false;
     }
    return true;
 }
 
 bool RobotControll::robotScanLimit() {
-    if(this->setCommand(this->CMD_SCAN, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_SCAN, tr("")) == false ) {
         return false;
     }
    return true;
 }
 
 bool RobotControll::robotMoveHome() {
-    if(this->setCommand(this->CMD_HOME, 1000, tr("%1 %2").arg(factor_velocity).arg(factor_accelerate)) == false ) {
+    if(this->setCommand(this->CMD_HOME, tr("%1 %2").arg(factor_velocity).arg(factor_accelerate)) == false ) {
         return false;
     }
    return true;
@@ -290,7 +369,7 @@ bool RobotControll::robotMoveLine(double x, double y, double z, double roll){
     } else {
         temp = time_total_limit;
     }
-    if(this->setCommand(this->CMD_MOVE_LINE, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
+    if(this->setCommand(this->CMD_MOVE_LINE, tr("%1 %2 %3 %4 %5 %6 %7")
                               .arg(x)
                               .arg(y)
                               .arg(z)
@@ -312,7 +391,7 @@ bool RobotControll::robotMoveCircle(double x, double y, double z, double roll,
     } else {
         temp = time_total_limit;
     }
-    if(this->setCommand(this->CMD_MOVE_CIRCLE, 1000, tr("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11")
+    if(this->setCommand(this->CMD_MOVE_CIRCLE, tr("%1 %2 %3 %4 %5 %6 %7 %8 %9 %10 %11")
                                               .arg(x)
                                               .arg(y)
                                               .arg(z)
@@ -336,7 +415,7 @@ bool RobotControll::robotMoveJoint( double x, double y, double z, double roll){
     } else {
         temp = time_total_limit;
     }
-    if(this->setCommand(this->CMD_MOVE_JOINT, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
+    if(this->setCommand(this->CMD_MOVE_JOINT, tr("%1 %2 %3 %4 %5 %6 %7")
                                               .arg(x)
                                               .arg(y)
                                               .arg(z)
@@ -356,7 +435,7 @@ bool RobotControll::robotRotateSingleJoint(int joint, double angle) {
     } else {
         temp = time_total_limit;
     }
-    if(this->setCommand(this->CMD_ROTATE_SINGLE, 1000, tr("%1 %2 %3 %4 %5")
+    if(this->setCommand(this->CMD_ROTATE_SINGLE, tr("%1 %2 %3 %4 %5")
                               .arg(joint)
                               .arg(angle)
                               .arg(factor_velocity)
@@ -372,7 +451,7 @@ bool RobotControll::robotOutput(bool output){
     if(output){
         value = 1;
     }
-    if(this->setCommand(this->CMD_OUTPUT, 1000, tr("%1")
+    if(this->setCommand(this->CMD_OUTPUT, tr("%1")
                               .arg(value)) == false ){
         return false;
     }
@@ -385,21 +464,21 @@ bool  RobotControll::robotOutputToggle() {
 }
 
 bool RobotControll::robotReadStatus(){
-    if(this->setCommand(this->CMD_READ_STATUS, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_READ_STATUS, tr("")) == false ) {
         return false;
     }
     return true;
 }
 
 bool RobotControll::robotReadPosition(){
-    if(this->setCommand(this->CMD_READ_POSITION, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_READ_POSITION, tr("")) == false ) {
         return false;
     }
     return true;
 }
 
 bool RobotControll::robotSetting(robotCoordinate_t coordinate, robotTrajectory_t   trajectory) {
-    if(this->setCommand(this->CMD_SETTING, 1000, tr("%1 %2")
+    if(this->setCommand(this->CMD_SETTING, tr("%1 %2")
                                               .arg(int(coordinate))
                                                .arg(int(trajectory))) == false ){
         return false;
@@ -408,7 +487,7 @@ bool RobotControll::robotSetting(robotCoordinate_t coordinate, robotTrajectory_t
 }
 
 bool  RobotControll::robotMethodChange(robotMethod_t method) {
-    if(this->setCommand(this->CMD_METHOD_CHANGE, 1000, tr("%1")
+    if(this->setCommand(this->CMD_METHOD_CHANGE, tr("%1")
                                                .arg(int(method))) == false ){
         return false;
     }
@@ -416,14 +495,14 @@ bool  RobotControll::robotMethodChange(robotMethod_t method) {
 }
 
 bool RobotControll:: robotJobNew() {
-    if(this->setCommand(this->CMD_JOB_NEW, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_JOB_NEW, tr("")) == false ) {
         return false;
     }
     return true;
 }
 
 bool RobotControll::robotJobDelete() {
-    if(this->setCommand(this->CMD_JOB_DELETE, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_JOB_DELETE, tr("")) == false ) {
         return false;
     }
     return true;
@@ -436,7 +515,7 @@ bool RobotControll::robotJobPushMoveLine(double x, double y, double z, double ro
     } else {
         temp = time_total_limit;
     }
-    if(this->setCommand(this->CMD_JOB_PUSH_MOVE_LINE, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
+    if(this->setCommand(this->CMD_JOB_PUSH_MOVE_LINE, tr("%1 %2 %3 %4 %5 %6 %7")
                               .arg(x)
                               .arg(y)
                               .arg(z)
@@ -456,7 +535,7 @@ bool RobotControll:: robotJobPushMoveJoint(double x, double y, double z, double 
     } else {
         temp = time_total_limit;
     }
-    if(this->setCommand(this->CMD_JOB_PUSH_MOVE_JOINT, 1000, tr("%1 %2 %3 %4 %5 %6 %7")
+    if(this->setCommand(this->CMD_JOB_PUSH_MOVE_JOINT, tr("%1 %2 %3 %4 %5 %6 %7")
                                               .arg(x)
                                               .arg(y)
                                               .arg(z)
@@ -472,7 +551,7 @@ bool RobotControll:: robotJobPushMoveJoint(double x, double y, double z, double 
 bool RobotControll::robotJobPushOutput(bool output) {
     int value = 0;
     if(output){ value = 1;}
-    if(this->setCommand(this->CMD_JOB_PUSH_OUTPUT, 1000, tr("%1")
+    if(this->setCommand(this->CMD_JOB_PUSH_OUTPUT, tr("%1")
                               .arg(value)) == false ){
         return false;
     }
@@ -480,32 +559,31 @@ bool RobotControll::robotJobPushOutput(bool output) {
 }
 
 bool RobotControll:: robotJobTest() {
-    if(this->setCommand(this->CMD_JOB_TEST, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_JOB_TEST, tr("")) == false ) {
         return false;
     }
     return true;
 }
 
 bool RobotControll:: robotJobRun() {
-    if(this->setCommand(this->CMD_JOB_RUN, 1000, tr("")) == false ) {
+    if(this->setCommand(this->CMD_JOB_RUN, tr("")) == false ) {
         return false;
     }
     return true;
 }
 
 bool  RobotControll::robotKeyBoard(robotKeyBoard_t key) {
-    if(this->setCommand(this->CMD_KEYBOARD, 1000, tr("%1").arg(int(key))) == false ) {
+    if(this->setCommand(this->CMD_KEYBOARD, tr("%1").arg(int(key))) == false ) {
         return false;
     }
    return true;
 }
 
-// speed : 1 --> 10
 bool  RobotControll::robotKeySpeedInc() {
     if ( key_speed > 1) {
         key_speed--;
     }
-    if(this->setCommand(this->CMD_KEY_SPEED, 1000, tr("%1").arg(int(key_speed))) == false ) {
+    if(this->setCommand(this->CMD_KEY_SPEED, tr("%1").arg(int(key_speed))) == false ) {
         return false;
     }
     return true;
@@ -515,7 +593,7 @@ bool  RobotControll::robotKeySpeedDec() {
     if ( key_speed < 5) {
         key_speed++;
     }
-    if(this->setCommand(this->CMD_KEY_SPEED, 1000, tr("%1").arg(int(key_speed))) == false ) {
+    if(this->setCommand(this->CMD_KEY_SPEED, tr("%1").arg(int(key_speed))) == false ) {
         return false;
     }
     return true;
