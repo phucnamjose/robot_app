@@ -913,7 +913,6 @@ release\moc_mainwindow.cpp: C:\Qt\5.9.9\msvc2015\include\QtWidgets\QMainWindow \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\qxylegendmarker.h \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\qtchartsversion.h \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\QChartView \
-		C:\Qt\5.9.9\msvc2015\include\QtCharts\QLineSeries \
 		C:\Qt\5.9.9\msvc2015\include\QtCore\QtMath \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\QXYLegendMarker \
 		C:\Qt\5.9.9\msvc2015\include\QtCore\QVector \
@@ -929,6 +928,7 @@ release\moc_mainwindow.cpp: C:\Qt\5.9.9\msvc2015\include\QtWidgets\QMainWindow \
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\QSerialPort \
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\qserialport.h \
 		..\SCARA_GUI\chartwindow.hpp \
+		C:\Qt\5.9.9\msvc2015\include\QtCharts\QLineSeries \
 		C:\Qt\5.9.9\msvc2015\include\QtWidgets\QGridLayout \
 		C:\Qt\5.9.9\msvc2015\include\QtWidgets\QFormLayout \
 		..\SCARA_GUI\chart.hpp \
@@ -1766,7 +1766,6 @@ release\main.obj: ..\SCARA_GUI\main.cpp ../SCARA_GUI/mainwindow.hpp \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\qxylegendmarker.h \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\qtchartsversion.h \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\QChartView \
-		C:\Qt\5.9.9\msvc2015\include\QtCharts\QLineSeries \
 		C:\Qt\5.9.9\msvc2015\include\QtCore\QtMath \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\QXYLegendMarker \
 		C:\Qt\5.9.9\msvc2015\include\QtCore\QVector \
@@ -1782,6 +1781,7 @@ release\main.obj: ..\SCARA_GUI\main.cpp ../SCARA_GUI/mainwindow.hpp \
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\QSerialPort \
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\qserialport.h \
 		../SCARA_GUI/chartwindow.hpp \
+		C:\Qt\5.9.9\msvc2015\include\QtCharts\QLineSeries \
 		C:\Qt\5.9.9\msvc2015\include\QtWidgets\QGridLayout \
 		C:\Qt\5.9.9\msvc2015\include\QtWidgets\QFormLayout \
 		../SCARA_GUI/chart.hpp \
@@ -2858,7 +2858,6 @@ release\mainwindow.obj: ..\SCARA_GUI\mainwindow.cpp ../SCARA_GUI/mainwindow.hpp 
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\qxylegendmarker.h \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\qtchartsversion.h \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\QChartView \
-		C:\Qt\5.9.9\msvc2015\include\QtCharts\QLineSeries \
 		C:\Qt\5.9.9\msvc2015\include\QtCore\QtMath \
 		C:\Qt\5.9.9\msvc2015\include\QtCharts\QXYLegendMarker \
 		C:\Qt\5.9.9\msvc2015\include\QtCore\QVector \
@@ -2874,6 +2873,7 @@ release\mainwindow.obj: ..\SCARA_GUI\mainwindow.cpp ../SCARA_GUI/mainwindow.hpp 
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\QSerialPort \
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\qserialport.h \
 		../SCARA_GUI/chartwindow.hpp \
+		C:\Qt\5.9.9\msvc2015\include\QtCharts\QLineSeries \
 		C:\Qt\5.9.9\msvc2015\include\QtWidgets\QGridLayout \
 		C:\Qt\5.9.9\msvc2015\include\QtWidgets\QFormLayout \
 		../SCARA_GUI/chart.hpp \
@@ -3332,7 +3332,21 @@ release\serialport.obj: ..\SCARA_GUI\serialport.cpp ../SCARA_GUI/serialport.hpp 
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\QSerialPort \
 		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\qserialport.h \
 		C:\Qt\5.9.9\msvc2015\include\QtCore\qiodevice.h \
-		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\qserialportglobal.h
+		C:\Qt\5.9.9\msvc2015\include\QtSerialPort\qserialportglobal.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\QDebug \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qdebug.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qhash.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qmap.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qtextstream.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qlocale.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qvariant.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qshareddata.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qvector.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qpoint.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qset.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qcontiguouscache.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qsharedpointer.h \
+		C:\Qt\5.9.9\msvc2015\include\QtCore\qsharedpointer_impl.h
 
 release\moc_chartwindow.obj: release\moc_chartwindow.cpp 
 

@@ -7,10 +7,10 @@
 #include <QMessageBox>
 #include <QSerialPortInfo>
 #include <QTimer>
+#include <QTime>
 #include <QSlider>
 #include<QtCharts>
 #include<QChartView>
-#include<QLineSeries>
 #include <QtCore/QtMath>
 #include <QtCharts/QValueAxis>
 #include <QtCharts/QXYLegendMarker>
@@ -80,7 +80,9 @@ private slots:
     void    serial_updateSetting();    // connect current text change
     void    serial_logCommand(QByteArray command);    // connect robot signal
     void    serial_logRespond(QByteArray respond);
-    void    serial_displayPosition();
+    void    serial_displayPosition(double x,double y, double z, double roll,
+                                   double var0, double var1, double var2, double var3,
+                                   double lenght, double time_run, double time_total);
     void    serial_workStart();
     void    serial_workRunning(double x,double y, double z, double roll,
                                double var0, double var1, double var2, double var3,

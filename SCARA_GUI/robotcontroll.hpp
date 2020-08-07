@@ -158,6 +158,7 @@ class RobotControll : public QObject
     };
 
     const int keyboard_time_period = 600;
+    const int update_period = 200;
   signals:
             // to main thread
             void    commandTimeOut();
@@ -177,25 +178,20 @@ class RobotControll : public QObject
             void    respondPosition(QByteArray repsond);
             void    respondArrived(QByteArray repsond);
 
-            void    child_updatePosition(double X, double Y,double Z, double ROLL,
-                                   double VAR0, double VAR1, double VAR2, double VAR3,
-                                   double LENGHT, double TIME_RUN, double TIME_TOTAL);
+            void    updatePosition(double x,double y, double z, double roll,
+                                   double var0, double var1, double var2, double var3,
+                                   double lenght, double time_run, double time_total);
             //to child thread
             void    main_sendThroughSerial(QByteArray data);
 
 private slots:
-            void    child_sendThroughSerial(QByteArray data);
-            void    main_updatePosition(double X,double Y, double Z, double ROLL,
-                                        double VAR0, double VAR1, double VAR2, double VAR3,
-                                        double LENGHT, double TIME_RUN, double TIME_TOTAL);
+            void    child_updatePosition();
 private:
             // child thread call
             bool    unPackData(QByteArray &data);
             void    readData();
             bool   processRespond(QByteArray &respond);
-            bool   list2position(QByteArrayList list, double &X, double &Y , double &Z, double &ROLL,
-                                                   double &J0, double &J1,  double &J2, double &J3, double &LENGHT,
-                                                    double &TIME, double &TOTAL_TIME);
+            bool   list2position(QByteArrayList list);
             // main thread call
             bool    writeData(QByteArray &data);
             bool    packData(QByteArray &data);
@@ -243,24 +239,10 @@ private:
             bool    robotKeySpeedInc();
             bool    robotKeySpeedDec();
 
-            bool       isScan();
-            double  getX();
-            double  getY();
-            double  getZ();
-            double  getRoll();
-            double  getVar0();
-            double  getVar1();
-            double  getVar2();
-            double  getVar3();
-            double  getLenght();
-            double  getTotalTime();
-            double  getTimeRun();
-            double  getValue(robotParam_t param);
-
  private:
             SerialPort  *port;
-            QThread         *my_thread;
-
+            QThread     *my_thread;
+            QTimer        *timer_update;
             // receive variable ---> child thread ---> main thread do not access
             QByteArray data_read;
             int              id_command  = 1;

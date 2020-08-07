@@ -10,6 +10,9 @@ class SerialPort : public QSerialPort
 public:
     explicit SerialPort(QObject *parent = nullptr);
     ~SerialPort();
+
+public slots:
+        void    child_sendThroughSerial(QByteArray data);
 };
 
 #endif // SERIALPORT_H

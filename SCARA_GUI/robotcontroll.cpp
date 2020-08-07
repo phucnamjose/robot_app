@@ -18,7 +18,7 @@ RobotControll::~RobotControll()
 // Unpack Respond
 bool RobotControll::unPackData(QByteArray &data)
 {
-    qDebug() << "unpack thread is:" << QThread::currentThreadId();
+   // qDebug() << "unpack thread is:" << QThread::currentThreadId();
     if(data.isNull() || data.isEmpty()) {
         M_DEBUG("data input is null");
         return false;
@@ -53,7 +53,6 @@ void RobotControll::readData() {
             // Unpack Payload
             if ( this->unPackData(temp) == false ) {
                 M_DEBUG("unpack fail");
-                M_DEBUG(qbyteArray2string(temp));
                 continue;
             }
             if (!processRespond(temp)) {
@@ -67,7 +66,6 @@ bool   RobotControll::processRespond(QByteArray &repsond) {
     qDebug() << "processRespond thread is:" << QThread::currentThreadId();
     int id_cmd;
     QByteArray respond_code;
-    double X, Y , Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME;
     bool isInt;
     QByteArrayList list = repsond.split(' ');
     id_cmd =  list.at(0).toInt(&isInt);
@@ -90,41 +88,37 @@ bool   RobotControll::processRespond(QByteArray &repsond) {
 
         // POSI
         } else if (respond_code == ROBOTRESPOND[RPD_POSITION]) {
-             list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
+             list2position(list);
              // Send Signal
              emit respondPosition(repsond);
         // STAR
         } else if (respond_code == ROBOTRESPOND[RPD_START]) {
-            list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
+            list2position(list);
             // Send Signal
-            emit commandWorkStart(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
-
+            emit commandWorkStart( x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
         // RUNN
         } else if (respond_code == ROBOTRESPOND[RPD_RUNNING]) {
-            list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
+            list2position(list);
             // Send Signal
-            emit commandWorkRunning(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
-
+            emit commandWorkRunning( x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
         // DONE
         } else if (respond_code == ROBOTRESPOND[RPD_DONE]) {
-            list2position(list, X, Y, Z, ROLL, J0, J1, J2, J3, LENGHT, TIME, TOTAL_TIME);
+            list2position(list);
             // Send Signal
             emit commandWorkDone(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
-
         // STOP
         } else if (respond_code == ROBOTRESPOND[RPD_STOP]) {
             // Send Signal
             emit commandWorkStop(repsond);
-
         // ERRO
         } else if (respond_code == ROBOTRESPOND[RPD_ERROR]) {
             // Send Signal
-            emit respondArrived(repsond);
+            emit commandDeny(repsond);
 
         // OKEY
         } else if (respond_code == ROBOTRESPOND[RPD_OK]) {
             // Send Signal
-            emit respondArrived(repsond);
+            emit commandAccept(repsond);
 
         // WRONG FRAME
         } else {
@@ -134,9 +128,7 @@ bool   RobotControll::processRespond(QByteArray &repsond) {
     return true;
 }
 
-bool   RobotControll::list2position(QByteArrayList list, double &X, double &Y , double &Z, double &ROLL,
-                                    double &J0, double &J1,  double &J2, double &J3, double &LENGHT,
-                                     double &TIME, double &TOTAL_TIME) {
+bool   RobotControll::list2position(QByteArrayList list) {
     double value[11];
     bool isdouble[11];
     if (list.length() != 13) {
@@ -148,41 +140,27 @@ bool   RobotControll::list2position(QByteArrayList list, double &X, double &Y , 
             return false;
         }
     }
-    J0  = value[0];
-    J1   = value[1];
-    J2  = value[2];
-    J3  = value[3];
-    X        = value[4];
-    Y        = value[5];
-    Z        = value[6];
-    ROLL    = value[7];
-    LENGHT = value[8];
-    TOTAL_TIME = value[9];
-    TIME = value[10];
+    var0  = value[0];
+    var1   = value[1];
+    var2  = value[2];
+    var3  = value[3];
+    x        = value[4];
+    y        = value[5];
+    z        = value[6];
+    roll    = value[7];
+    lenght = value[8];
+    time_total = value[9];
+    time_run = value[10];
     return true;
 }
 
-void   RobotControll:: child_sendThroughSerial(QByteArray data) {
-    port->write(data);
+
+void RobotControll::child_updatePosition() {
+    qDebug() << "child_update thread is:" << QThread::currentThreadId();
+    emit updatePosition(x, y, z, roll, var0, var1, var2, var3 , lenght, time_run, time_total);
 }
 
 //// Main thread call
-
-void   RobotControll:: main_updatePosition(double X,double Y, double Z, double ROLL,
-                                           double VAR0, double VAR1, double VAR2, double VAR3,
-                                           double LENGHT, double TIME_RUN, double TIME_TOTAL) {
-    x = X;
-    y = Y;
-    z = Z;
-    roll = ROLL;
-    var0 = VAR0;
-    var1 = VAR1;
-    var2 = VAR2;
-    var3 = VAR3;
-    lenght = LENGHT;
-    time_run = TIME_RUN;
-    time_total = TIME_TOTAL;
-}
 
 // Intergrate parameters to Command
 bool RobotControll::setCommand(robotCommand_t cmd, const QString para) {
@@ -230,6 +208,7 @@ bool RobotControll::packData(QByteArray &data)
 
 // Send Command to Robot
 bool RobotControll::writeData(QByteArray &data) {
+    qDebug() << "writeData thread is:" << QThread::currentThreadId();
     if(portOpen) {
         // Pack Payload
         if( this->packData(data) == false ) {
@@ -237,7 +216,6 @@ bool RobotControll::writeData(QByteArray &data) {
             return false;
         }
         emit main_sendThroughSerial(data);
-        M_DEBUG(qbyteArray2string(data));
     } else {
         M_DEBUG("no device");
         return false;
@@ -256,7 +234,7 @@ bool  RobotControll::openComPort(QString port_name) {
         qDebug() << "ERROR: Port is opened!!!";
         return false;
     }
-    port = new SerialPort();
+    port = new SerialPort;
     port->setPortName(port_name);
     port->setBaudRate(QSerialPort::Baud115200);
     port->setDataBits(QSerialPort::Data8); //data bits
@@ -266,17 +244,18 @@ bool  RobotControll::openComPort(QString port_name) {
     if (port->open(QIODevice::ReadWrite)) {
          qDebug() << "Port open SUCCESS!!!";
          connect(port, &QSerialPort::readyRead, this, &RobotControll::readData, Qt::DirectConnection);
-         connect(this, &RobotControll::child_updatePosition,
-                            this, &RobotControll::main_updatePosition, Qt::QueuedConnection);
          connect(this, &RobotControll::main_sendThroughSerial,
-                            this, &RobotControll::child_sendThroughSerial, Qt::QueuedConnection);
+                            port, &SerialPort::child_sendThroughSerial, Qt::QueuedConnection);
+         timer_update = new QTimer();
+         connect(timer_update, &QTimer::timeout, this, &RobotControll::child_updatePosition);
 
          my_thread = new QThread();
          connect(my_thread, &QThread::finished, port, &SerialPort::deleteLater);
-
+         connect(my_thread, &QThread::finished, timer_update, &QTimer::deleteLater);
+         timer_update->start(update_period);
+         timer_update->moveToThread(my_thread);
          port->moveToThread(my_thread);
          my_thread->start();
-
          portOpen = true;
          return true;
     } else {
@@ -599,91 +578,3 @@ bool  RobotControll::robotKeySpeedDec() {
     return true;
 }
 
-bool  RobotControll::isScan() {
-    return scan;
-}
-
-double  RobotControll::getValue(robotParam_t param) {
-    switch (param) {
-    case Param_Var0:
-        return var0;
-        break;
-    case Param_Var1:
-        return var1;
-        break;
-    case Param_Var2:
-        return var2;
-        break;
-    case Param_Var3:
-        return var3;
-        break;
-    case Param_X:
-        return x;
-        break;
-    case Param_Y:
-        return y;
-        break;
-    case Param_Z:
-        return z;
-        break;
-    case Param_Roll:
-        return roll;
-        break;
-    case Param_Lenght:
-        return lenght;
-        break;
-    case Param_Time_Total:
-        return time_total;
-        break;
-    case Param_TimeRun:
-        return  time_run;
-        break;
-    default:
-        return 0;
-        break;
-    }
-}
-
-double RobotControll::getX(){
-    return x;
-}
-
-double RobotControll::getY(){
-    return y;
-}
-
-double RobotControll::getZ(){
-    return z;
-}
-
-double RobotControll::getRoll(){
-    return roll;
-}
-
-double RobotControll::getVar0(){
-    return var0;
-}
-
-double RobotControll::getVar1(){
-    return var1;
-}
-
-double RobotControll::getVar2(){
-    return var2;
-}
-
-double RobotControll::getVar3(){
-    return var3;
-}
-
-double RobotControll::getLenght() {
-     return lenght;
-}
-
-double RobotControll::getTotalTime() {
-    return time_total;
-}
-
-double RobotControll:: getTimeRun() {
-    return time_run;
-}

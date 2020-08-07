@@ -102,7 +102,7 @@ void MainWindow::plot_init() {
 
     timer_update_figure = new QTimer(this);
     connect(timer_update_figure, &QTimer::timeout, this, &MainWindow:: plot_timerFigure_handle);
-    timer_update_figure->start(500);
+    timer_update_figure->start(200);
 }
 
 void MainWindow::plot_initComboBox() {
@@ -142,8 +142,6 @@ void  MainWindow::plot_timerFigure_handle() {
     if(num_sample_plot < vec_time.size() && vec_time.size() > 0) {
         for( ChartWindow *figure : m_figure) {
             for( int  i = 0;  i < figure->var_list.count(); ++i) {
-               // figure->addPoint(i, (*vec_list.at(figure->var_list.at(i).first)->mid(num_sample_plot)),
-                   //                                    (*vec_list.at(figure->var_list.at(i).second)->mid(num_sample_plot)));
                 figure->addPoint(i, vec_list.at(figure->var_list.at(i).first)->mid(num_sample_plot),
                                 vec_list.at(figure->var_list.at(i).second)->mid(num_sample_plot) );
             }
@@ -187,12 +185,9 @@ void MainWindow::compute_init() {
         vec_list.append(&vec_acc [i]);
     }
 
-    timer_update_display = new QTimer(this);
-    // Signal & Slot
-    connect(timer_update_display, &QTimer::timeout, this, &MainWindow::serial_displayPosition);
+
     connect(m_ui->pushButton_Delete_Data, &QPushButton::clicked,
                         this, &MainWindow::on_pushButton_Delete_Data_Clicked);
-    timer_update_display->start(300);
 }
 
 void MainWindow::compute_newData(double x,double y, double z, double roll,
@@ -264,13 +259,15 @@ void MainWindow::serial_init() {
                         this, &MainWindow::on_pushButton_Output_Clicked);
 
 
-    connect(m_robot, &RobotControll::commandSend, this, &MainWindow::serial_logCommand);
-    connect(m_robot, &RobotControll::respondArrived, this, &MainWindow::serial_logRespond);
-    connect(m_robot, &RobotControll::respondPosition, this, &MainWindow::serial_logRespond);
-    connect(m_robot, &RobotControll::respondPosition, this, &MainWindow::serial_displayPosition);
-    connect(m_robot, &RobotControll::commandWorkStart, this, &MainWindow::serial_workStart);
-    connect(m_robot, &RobotControll::commandWorkRunning, this, &MainWindow::serial_workRunning);
-    connect(m_robot, &RobotControll::commandWorkDone, this, &MainWindow::serial_workEnd);
+    connect(m_robot, &RobotControll::commandSend, this, &MainWindow::serial_logCommand, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::respondArrived, this, &MainWindow::serial_logRespond, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::respondPosition, this, &MainWindow::serial_logRespond, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::commandAccept, this, &MainWindow::serial_logRespond, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::commandDeny, this, &MainWindow::serial_logRespond, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::commandWorkStart, this, &MainWindow::serial_workStart, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::commandWorkRunning, this, &MainWindow::serial_workRunning, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::commandWorkDone, this, &MainWindow::serial_workEnd, Qt::QueuedConnection);
+    connect(m_robot, &RobotControll::updatePosition, this, &MainWindow::serial_displayPosition, Qt::QueuedConnection);
     // create timer to update what comboBox PortName change
     timer_update_comport = new QTimer(this);
     connect(timer_update_comport, &QTimer::timeout, this, &MainWindow::serial_updatePortName);
@@ -348,39 +345,31 @@ void MainWindow::serial_updateSetting() {
 
 
 void MainWindow::serial_logCommand(QByteArray command) {
+     qDebug() << "logCommand thread is:" << QThread::currentThreadId();
     logsWrite(tr(command), QColor(0,0,140));
 }
 
 void MainWindow::serial_logRespond(QByteArray respond) {
+     qDebug() << "logRespond thread is:" << QThread::currentThreadId();
      logsWrite(tr(respond), QColor(230,0,0));
 }
 
-void MainWindow::serial_displayPosition() {
-    if (m_robot->isScan()) {
-        double var0, var1, var3, roll;
-        var0 = m_robot->getVar0();
-        var1 = m_robot->getVar1();
-        var3 = m_robot->getVar3();
-        roll   = m_robot->getRoll();
-        double var2, x, y ,z;
-        var2 = m_robot->getVar2();
-        x = m_robot->getX();
-        y = m_robot->getY();
-        z = m_robot->getZ();
-        double time, time_total;
-        time = m_robot->getTimeRun();
-        time_total = m_robot->getTotalTime();
+void MainWindow::serial_displayPosition(double x,double y, double z, double roll,
+                                        double var0, double var1, double var2, double var3,
+                                        double lenght, double time_run, double time_total) {
+        // Get data
+        qDebug() << "display thread is:" << QThread::currentThreadId()<< "Time"<< QTime::currentTime().toString();
         // Display in slider
         m_ui->horizontalSlider_var0->setValue(round((var0 - (-85))/(85 - (- 85))*1000));
         m_ui->horizontalSlider_var1->setValue(round((var1 - (-135))/(135 - (- 135))*1000));
-        m_ui->horizontalSlider_var2->setValue(round(var2/90*1000));
+        m_ui->horizontalSlider_var2->setValue(round(var2/100*1000));
         m_ui->horizontalSlider_var3->setValue(round((var3 - (-170))/(170 - (- 170))*1000));
         // Display in Text edit
         if (!m_ui->radioButton_Degree->isChecked()) {
-            var0 = m_robot->getVar0()*M_PI/180.0;
-            var1 = m_robot->getVar1()*M_PI/180.0;
-            var3 = m_robot->getVar3()*M_PI/180.0;
-            roll   = m_robot->getRoll()*M_PI/180.0;
+            var0 = var0*M_PI/180.0;
+            var1 = var1*M_PI/180.0;
+            var3 = var2*M_PI/180.0;
+            roll   = var3*M_PI/180.0;
         }
         m_ui->textEdit_Theta1->setText(QString::number(var0));
         m_ui->textEdit_Theta2->setText(QString::number(var1));
@@ -391,14 +380,12 @@ void MainWindow::serial_displayPosition() {
         m_ui->textEdit_Z->setText(QString::number(z));
         m_ui->textEdit_Roll->setText(QString::number(roll));
          // Display in Progress Bar
-        m_ui->progressBar_Running->setValue(ceil(time/time_total*1000));
-    }
+        m_ui->progressBar_Running->setValue(ceil(time_run/time_total*1000));
 }
 
 void MainWindow::serial_workStart() {
     time_pre = -0.01;
     num_sample = 0;
-    serial_displayPosition();
     if (vec_time.size() > 0) {
         pre_time_total  = vec_time.last();
         pre_lenght = vec_pos[8].last();
@@ -411,14 +398,12 @@ void MainWindow::serial_workRunning(double x,double y, double z, double roll,
                                     double var0, double var1, double var2, double var3,
                                     double lenght, double time_run, double time_total) {
     compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
-    serial_displayPosition();
 }
 
 void MainWindow::serial_workEnd(double x,double y, double z, double roll,
                                 double var0, double var1, double var2, double var3,
                                 double lenght, double time_run, double time_total) {
     compute_newData(x, y, z, roll, var0, var1, var2, var3, lenght, time_run, time_total);
-    serial_displayPosition();
    // logsWrite(respond, QColor(220, 80, 115));
     num_sample = 0;
     time_pre = -0.01;
@@ -538,7 +523,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::on_pushButton_startUpCommand() {
     // Check
-    if (true)  {
+    if (!m_robot->isOpen())  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }
@@ -552,7 +537,7 @@ void MainWindow::on_pushButton_startUpCommand() {
 void MainWindow::on_pushButton_Stop_clicked()
 {
     // Check
-    if (true)  {
+    if (!m_robot->isOpen())  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }
@@ -590,7 +575,7 @@ void MainWindow::on_pushButton_Plot_Clicked() {
 
 void MainWindow::on_pushButton_Request_Clicked() {
     // Check
-    if (true)  {
+    if (!m_robot->isOpen())  {
         QMessageBox::critical(this, tr("Error"), tr("Comport is not connected"));
         return;
     }
