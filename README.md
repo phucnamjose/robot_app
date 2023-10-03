@@ -1,9 +1,7 @@
 # Hello
-Đây là graphic application dùng điều kiển cánh tay robot 4 bậc tự do SCARA.
+This is graphic UI to interact with a 4DOF SCARA robot.
 
-### Tác giả:
+### Author:
 Đặng Hồng Phúc Nam [facebook](https://www.facebook.com/profile.php?id=100006869959169)
-
-Tôi sẽ hoàn thành nó cho báo cáo luận văn tốt nghiệp.
 
 **No pain - No gain.**
